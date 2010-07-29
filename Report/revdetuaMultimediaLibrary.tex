@@ -1,0 +1,88 @@
+\documentclass[a4paper]{revdetua}
+
+\usepackage[english]{babel}
+\usepackage{cite}
+\usepackage{ifthen,graphicx,color}
+\usepackage[latin1]{inputenc}
+\usepackage{url}
+
+\oddsidemargin  -0.5cm
+\evensidemargin -0.5cm
+\textwidth      17cm
+\topmargin      -2.5cm
+\headheight     0cm
+\textheight     26.5cm
+
+\begin{document}
+
+\title{Multimedia Library: Use of SIMD instructions to speedup the processing of vectors and matrixes}
+
+\author{Edgar Domingues, Mário Antunes}
+
+\maketitle
+
+\begin{abstract}
+This document presents a study on how use SIMD(Single Instruction Multiple Data) instructions to speedup 
+the processing of vectors and matrixes, particulary instructions of SSE(Streaming SIMD Extensions) family.
+For this study was developed a library with classic version of the algorithm and a version using SSE 
+instructions for the most common operações in vectors and matrixes.
+\end{abstract}
+
+\begin{resumo}
+Este documento apresenta um estudo sobre como utilizar instruções SIMD (Single Instruction Multiple Data)
+para acelerar o processamento de vectores e matrizes, em partícular instruções da família SSE(Streaming
+SIMD Extensions). Para este estudo foi desenvolvida uma biblioteca que possui as versões clássicas e as versões
+que utilizam instruções multimédia das operações mais comuns de vectores e matrizes.
+\end{resumo}
+
+\begin{keywords}
+SIMD, SSE
+\end{keywords}
+
+\begin{palavraschave}
+SIMD, SSE
+\end{palavraschave}
+
+\section{Introduction}
+
+The need to improve the performance o computing system leads to the approach to
+parallelize the software. A technique used is SIMD(REF), executes the same
+operation on multiple data simultaneously. This is an advantage in multimedia
+system, where is performed the same operation over a wide number of data, for
+instance, manipulation image programs, where the same operation is performed for
+all, or a wide range, of pixels from a image.
+
+The MMX and SSE are sets of instructions SIMD developed by Intel and have been
+expanded ever since.
+
+For this study we decided only use SSE, because it have a wider instrcution set,
+that allows to explore more complex algorithms. Allows to process faster a set
+of data because uses register width the twice of the size, witch means, that the
+algorithms will have a greater performance.
+
+The program language choosed for this library was C++, because is a well known, 
+well documented and allows to insert ASM code, this is particulary important
+because SSE is a set of low level instructions and are avaiable only from ASM code.
+\section{Multimedia Extensions for processors}
+
+Most of the actual processor supports a set of SIMD instructions in their ISAs
+(Instructions Set Architectures). The first ISA to introduce multimedia
+extensions was PA-RISC, in January 1994 they introduce MAX-1(Multimedia 
+Acceleration eXtensions). Later on Sun(or Oracle??) added VIS(Visual Instruction
+Set) to the Sparc ISA follow by HP that introduced MAX-2, its second generation
+multimedia extensions for its 64-bit PA-RISC 2.0 ISA.
+
+In January 1997 Intel introduced chips with MMX (Multi-Media Extensions) added
+to the ix86 ISA.
+
+In 1999 Intel presents SSE with its processor Pentium III, since then SSE
+extanded with every version, and its support by almost every desktop processor.
+The latest version is 4.2, and can be found in the Core processor from Intel. A
+new version is being developed by AMD, SSE5.
+
+For this study we only used SSE and SSE2, because the new versions only add very
+specific instruction to a very specific operation, and the porpuse of the study
+is a generic library for vector and matrixes processing.
+\bibliography{Refs}{...}
+
+\end{document}

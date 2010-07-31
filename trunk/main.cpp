@@ -7,11 +7,11 @@
 
 #define SIZE 1000000
 #define SIZE2 100
-#define COLS 5000
-#define ROWS 5000
+#define COLS 1000
+#define ROWS 500
 #define COLS2 10
 #define ROWS2 10
-#define REPEAT 100
+#define REPEAT 10
 
 using namespace std;
 
@@ -1776,10 +1776,15 @@ void testTransposeMatrix()
 	float time1, time2;
 
 	float **matrix_float = create_matrix_float(ROWS, COLS);
-	float **result_float1 = create_matrix_float(ROWS, COLS);
-	float **result_float2 = create_matrix_float(ROWS, COLS);
+	float **result_float1 = create_matrix_float(COLS, ROWS);
+	float **result_float2 = create_matrix_float(COLS, ROWS);
+
+	double **matrix_double = create_matrix_double(ROWS, COLS);
+	double **result_double1 = create_matrix_double(COLS, ROWS);
+	double **result_double2 = create_matrix_double(COLS, ROWS);
 
 	fill_matrix_random_float(matrix_float, ROWS, COLS);
+	fill_matrix_random_double(matrix_double, ROWS, COLS);
 
 	/*** float ***/
 	init = clock();
@@ -1801,14 +1806,43 @@ void testTransposeMatrix()
 	cout << "speedup: " << time1/time2 << endl;
 
 	cout << "Compare Result: ";
-	if(isEqual_matrix_float(result_float1, result_float2, ROWS, COLS))
+	if(isEqual_matrix_float(result_float1, result_float2, COLS, ROWS))
 		cout << "Equal" << endl;
 	else
 		cout << "Not Equal!" << endl;
 
 	destroy_matrix_float(&matrix_float, ROWS);
-	destroy_matrix_float(&result_float1, ROWS);
-	destroy_matrix_float(&result_float2, ROWS);
+	destroy_matrix_float(&result_float1, COLS);
+	destroy_matrix_float(&result_float2, COLS);
+
+	/*** double ***/
+	init = clock();
+	for(int i = 0; i < REPEAT; i++)
+		transpose_matrix_double(matrix_double, result_double1, ROWS, COLS);
+	end = clock();
+	time1 = (end-init)/(CLOCKS_PER_SEC*1.0);
+
+	cout << "transpose_matrix_double time: " << time1 << endl;
+
+	init = clock();
+	for(int i=0; i<REPEAT; i++)
+		transpose_matrix_double_sse2(matrix_double, result_double2, ROWS, COLS);
+	end = clock();
+	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
+
+	cout << "transpose_matrix_double_sse2 time: " << time2 << endl;
+
+	cout << "speedup: " << time1/time2 << endl;
+
+	cout << "Compare Result: ";
+	if(isEqual_matrix_double(result_double1, result_double2, COLS, ROWS))
+		cout << "Equal" << endl;
+	else
+		cout << "Not Equal!" << endl;
+
+	destroy_matrix_double(&matrix_double, ROWS);
+	destroy_matrix_double(&result_double1, COLS);
+	destroy_matrix_double(&result_double2, COLS);
 }
 
 void testConvolutionMatrix()
@@ -1908,7 +1942,8 @@ int main (void)
 	//testDotProduct();
 	//testSummatrix();
 	//testSumLinearMatrix();
-	//testMulmatrix();
+	testTransposeMatrix();
+	testMulmatrix();
 	//testMax();
 	//testMin();
 	//testMemCpy();
@@ -1916,7 +1951,5 @@ int main (void)
 	//testConvolutionMatrix();
 	//testCmp();
 	
-	testTransposeMatrix();
-		
 	return 0;
 }

@@ -3244,9 +3244,9 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 {
 	int i = 0, j = 0, lengthRows = (rows / 4) * 4, lengthCols = (cols / 4) * 4;	
 	
-	for(j = 0; j < cols; j += 4)
+	for(j = 0; j < lengthCols; j += 4)
 	{
-		for(i = 0; i < rows; i += 4)
+		for(i = 0; i < lengthRows; i += 4)
 		{
 			__asm__ volatile
 			( // instruction             comment
@@ -3290,9 +3290,22 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 		}
 	}
 
-	for(i = lengthRows; i < rows; i++)
+	for(i = 0; i < rows; i++)
 		for(j = lengthCols; j < cols; j++)
 			b[j][i] = a[i][j];
+
+	for(i = lengthRows; i < rows; i++)
+		for(j = 0; j < lengthCols; j++)
+			b[j][i] = a[i][j];
+}
+
+void transpose_matrix_double(double **a, double **b, int rows, int cols)
+{
+	int i = 0, j = 0;
+
+	for(i = 0; i < rows; i++)
+		for(j = 0; j < cols; j++)
+			b[j][i] = a[i][j]; 
 }
 
 /**
@@ -3312,57 +3325,40 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
  * @param[in]	rows number of rows of matrix A
  * @param[in]	cols number of columns of matrix A
  *
- */ 
-void col2row_double_sse2(double **a, double *b, int col, int rows, int cols)
+ */
+void transpose_matrix_double_sse2(double **a, double **b, int rows, int cols)
 {
-	int i = 0, length = (rows/2)*2;
-
-	if(((cols - col) > 1))
+	int i = 0, j = 0, lengthRows = (rows / 2) * 2, lengthCols = (cols / 2) * 2;	
+	
+	for(j = 0; j < lengthCols; j += 2)
 	{
-		switch((col%2))
+		for(i = 0; i < lengthRows; i += 2)
 		{
-			case 0:
-				for(i = 0; i < length; i+=2)
-				{
-					__asm__ volatile
-					( // instruction             comment
-               				"\n\t movdqa	%1,%%xmm0	\t#"
-                			"\n\t movdqa	%2,%%xmm1	\t#"
-                			"\n\t unpcklpd  %%xmm1,%%xmm0	\t#"
-                			"\n\t movdqa     %%xmm0,%0	\t#"
-					: "=m" (b[i])          // %0
-					: "m"  (a[i][col]),    // %1
-			  		  "m"  (a[i+1][col])   // %2
-					);
-				}
-				break;
-
-			case 1:
-				for(i = 0; i < length; i+=2)
-				{
-                			__asm__ volatile
-                			( // instruction             comment
-               				"\n\t movdqa	%1,%%xmm0	\t#"
-                			"\n\t movdqa	%2,%%xmm1	\t#"
-                			"\n\t unpckhpd  %%xmm1,%%xmm0	\t#"
-                			"\n\t movdqa     %%xmm0,%0	\t#"
-					: "=m" (b[i])          // %0
-					: "m"  (a[i][col-1]),  // %1
-			  		  "m"  (a[i+1][col-1]) // %2
-					);
-				}
-				break;
-
-
+			__asm__ volatile
+			( // instruction             comment
+               		"\n\t movdqa	%2,%%xmm0	\t#"
+                	"\n\t movdqa	%3,%%xmm1	\t#"
+			"\n\t movdqa	%2,%%xmm2	\t#"
+                	"\n\t movdqa	%3,%%xmm3	\t#"
+                	"\n\t unpcklpd  %%xmm1,%%xmm0	\t#"
+			"\n\t unpckhpd  %%xmm3,%%xmm2	\t#"
+                	"\n\t movdqa     %%xmm0,%0	\t#"
+			"\n\t movdqa     %%xmm2,%1	\t#"
+			: "=m" (b[j][i]),    // %0
+			  "=m" (b[j+1][i])   // %1
+			: "m"  (a[i][j]),    // %2
+			  "m"  (a[i+1][j])   // %3
+			);
 		}
 	}
-	else
-	{
-		length = 0;
-	}
 
-	for(i = length; i < rows; i++)
-			b[i] = a[i][col];
+	for(i = 0; i < rows; i++)
+		for(j = lengthCols; j < cols; j++)
+			b[j][i] = a[i][j];
+
+	for(i = lengthRows; i < rows; i++)
+		for(j = 0; j < lengthCols; j++)
+			b[j][i] = a[i][j];
 }
 
 /**
@@ -3385,7 +3381,7 @@ void col2row_double_sse2(double **a, double *b, int col, int rows, int cols)
  * @param[in]	a matrix with elements to mul
  * @param[in]	b matrix with elements to mul
  * @param[out]	c result matrix
- * @param[in]	i number of rows of the result matrix
+ * @param[in]	i number of rows of matrix a
  * @param[in]	j number of cols of matrix a and number of rows of matrix b
  * @param[in]	k number of cols of the result matrix
  *
@@ -3427,7 +3423,7 @@ void mulmatrix_float(float **a, float **b, float **c, int i, int j, int k)
  * @param[in]	a matrix with elements to mul
  * @param[in]	b matrix with elements to mul
  * @param[out]	c result matrix
- * @param[in]	i number of rows of the result matrix
+ * @param[in]	i number of rows of matrix a
  * @param[in]	j number of cols of matrix a and number of rows of matrix b
  * @param[in]	k number of cols of the result matrix
  *
@@ -3435,16 +3431,15 @@ void mulmatrix_float(float **a, float **b, float **c, int i, int j, int k)
 void mulmatrix_float_sse2(float **a, float **b, float **c, int i, int j, int k)
 {
 	int row = 0, col = 0;
-	float __attribute__ ((aligned(16))) t[j];
+	float **t = create_matrix_float(k, j);
+
+	transpose_matrix_float_sse2(b, t, j, k);
 
 	for(row = 0; row < i; row++)
 	{
 		for(col = 0; col < k; col++)
 		{
-			col2row_float_sse2(b, t, col, j, k);
-			mularray_float_sse2(a[row], t, t, j);
-			c[row][col] = sumelem_float_sse2(t,j);
-			//c[row][col] = dotProduct_float_sse2(a[row],t,j);
+			c[row][col] = dotProduct_float_unrolled_sse2(a[row], t[col], j);
 		}
 	}
 }
@@ -3519,17 +3514,15 @@ void mulmatrix_double(double **a, double **b, double **c, int i, int j, int k)
 void mulmatrix_double_sse2(double **a, double **b, double **c, int i, int j, int k)
 {
 	int row = 0, col = 0;
-	double __attribute__ ((aligned(16))) t[j];
+	double **t = create_matrix_double(k, j);
+
+	transpose_matrix_double_sse2(b, t, j, k);
 
 	for(row = 0; row < i; row++)
 	{
 		for(col = 0; col < k; col++)
 		{
-			col2row_double_sse2(b, t, col, j, k);
-
-			mularray_double_sse2(a[row], t, t, j);
-
-			c[row][col] = sumelem_double_sse2(t,j);
+			c[row][col] = dotProduct_double_unrolled_sse2(a[row], t[col], j);
 		}
 	}
 }

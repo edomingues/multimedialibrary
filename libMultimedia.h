@@ -177,4 +177,7 @@ void convolution_matrix_double_sse2(double **a, double **b, double **c, int rows
 void transpose_matrix_float(float **a, float **b, int rows, int cols);
 void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols);
 
+void transpose_matrix_double(double **a, double **b, int rows, int cols);
+void transpose_matrix_double_sse2(double **a, double **b, int rows, int cols);
+
 #endif

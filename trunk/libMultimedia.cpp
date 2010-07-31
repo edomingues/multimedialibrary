@@ -173,83 +173,6 @@ char sumelem_char_unrolled_sse2(char *a, int size)
 	return rv;
 }
 
-char sumelem_char_unrolled2_sse2(char *a, int size)
-{
-	char __attribute__ ((aligned(16))) b[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	int i = 0,
-	    length6 = (size/112)*112,
-	    length3 = (size/48)*48,
-	    length = (size/16)*16;
-	char rv = 0;
-
-	__asm__ volatile
-        ("movdqa %0,%%xmm0" : :"m" (b[0]));
-
-	for (; i < length6; i += 112)
-	{
-		__asm__ volatile
-		(// instruction		 comment
-		 "\n\t movdqa %0,%%xmm1 \t#"
-		 "\n\t movdqa %1,%%xmm2 \t#"
-		 "\n\t movdqa %2,%%xmm3 \t#"
-		 "\n\t movdqa %3,%%xmm4 \t#"
-		 "\n\t movdqa %4,%%xmm5 \t#"
-		 "\n\t movdqa %5,%%xmm6 \t#"
-		 "\n\t movdqa %6,%%xmm7 \t#"
-		 "\n\t paddb %%xmm1,%%xmm0 \t#"
-		 "\n\t paddb %%xmm2,%%xmm0 \t#"
-		 "\n\t paddb %%xmm5,%%xmm0 \t#"
-		 "\n\t paddb %%xmm3,%%xmm0 \t#"
-		 "\n\t paddb %%xmm6,%%xmm0 \t#"
-		 "\n\t paddb %%xmm4,%%xmm0 \t#"
-		 "\n\t paddb %%xmm7,%%xmm0 \t#"
-		 :
-		 :"m"  (a[i]),       // %0
-		  "m"  (a[i+16]),    // %1
-		  "m"  (a[i+32]),    // %2
-		  "m"  (a[i+48]),    // %3
-		  "m"  (a[i+64]),    // %4
-		  "m"  (a[i+80]),    // %5
-		  "m"  (a[i+96])     // %6
-		);
-	}
-
-	for (; i < length3; i += 48)
-	{
-		__asm__ volatile
-		(// instruction             comment
-		 "\n\t movdqa %0,%%xmm2 \t#"
-		 "\n\t movdqa %1,%%xmm3 \t#"
-		 "\n\t movdqa %2,%%xmm4 \t#"
-		 "\n\t paddb %%xmm2,%%xmm0 \t#"
-		 "\n\t paddb %%xmm4,%%xmm0 \t#"
-		 "\n\t paddb %%xmm3,%%xmm0 \t#"
-		 :
-		 :"m"  (a[i]),       // %0
-		  "m"  (a[i+16]),    // %1
-		  "m"  (a[i+32])     // %2
-		);
-	}
-
-	for (; i < length; i += 16)
-	{
-		__asm__ volatile
-		("paddb %0,%%xmm0" : :"m" (a[i]));
-	}
-
-	__asm__ volatile
-        ("movdqa %%xmm0,%0" :"=m" (b[0]): );
-	
-	rv = b[0]+b[1]+b[2]+b[3]+b[4]+b[5]+b[6]+b[7]+b[8]+b[9]+b[10]+b[11]+b[12]+b[13]+b[14]+b[15];
-	
-	for(; i < size; i++)
-	{
-		rv = rv + a[i];
-	}
-	
-	return rv;
-}
-
 /**
  * Calculate the sum of all elements in a array of integers.
  * Classic algorithm.
@@ -3231,6 +3154,26 @@ void col2row_float_sse2(float **a, float *b, int col, int rows, int cols)
 			b[i] = a[i][col];
 }
 
+/**
+ * Calculates the transpose of matrix A and store it in matrix B.
+ * Classic Algorithm.
+ *
+ * Example:
+ \verbatim
+        A	         B	
+  | 1| 2| 3| 4|    | 1| 5| 9|13|
+  | 5| 6| 7| 8| => | 2| 6|10|14|
+  | 9|10|11|12|    | 3| 7|11|15|
+  |13|14|15|16|    | 4| 8|12|16|
+ \endverbatim
+ *
+ * @param[in]	a source matrix
+ * @param[out]	b destination array
+ * @param[in]	rows number of rows of matrix A and number of columns of matrix B
+ * @param[in]	cols number of columns of matrix A and number of rows of matrix A
+ *
+ */
+
 void transpose_matrix_float(float **a, float **b, int rows, int cols)
 {
 	int i = 0, j = 0;
@@ -3240,6 +3183,25 @@ void transpose_matrix_float(float **a, float **b, int rows, int cols)
 			b[j][i] = a[i][j]; 
 }
 
+/**
+ * Calculates the transpose of matrix A and store it in matrix B.
+ * Algorithm uses SSE2.
+ *
+ * Example:
+ \verbatim
+        A	         B	
+  | 1| 2| 3| 4|    | 1| 5| 9|13|
+  | 5| 6| 7| 8| => | 2| 6|10|14|
+  | 9|10|11|12|    | 3| 7|11|15|
+  |13|14|15|16|    | 4| 8|12|16|
+ \endverbatim
+ *
+ * @param[in]	a source matrix
+ * @param[out]	b destination array
+ * @param[in]	rows number of rows of matrix A and number of columns of matrix B
+ * @param[in]	cols number of columns of matrix A and number of rows of matrix A
+ *
+ */
 void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 {
 	int i = 0, j = 0, lengthRows = (rows / 4) * 4, lengthCols = (cols / 4) * 4;	
@@ -3299,6 +3261,25 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 			b[j][i] = a[i][j];
 }
 
+/**
+ * Calculates the transpose of matrix A and store it in matrix B.
+ * Classic Algorithm.
+ *
+ * Example:
+ \verbatim
+        A	         B	
+  | 1| 2| 3| 4|    | 1| 5| 9|13|
+  | 5| 6| 7| 8| => | 2| 6|10|14|
+  | 9|10|11|12|    | 3| 7|11|15|
+  |13|14|15|16|    | 4| 8|12|16|
+ \endverbatim
+ *
+ * @param[in]	a source matrix
+ * @param[out]	b destination array
+ * @param[in]	rows number of rows of matrix A and number of columns of matrix B
+ * @param[in]	cols number of columns of matrix A and number of rows of matrix A
+ *
+ */
 void transpose_matrix_double(double **a, double **b, int rows, int cols)
 {
 	int i = 0, j = 0;
@@ -3309,21 +3290,22 @@ void transpose_matrix_double(double **a, double **b, int rows, int cols)
 }
 
 /**
- * Converts a col of A to an array B.
+ * Calculates the transpose of matrix A and store it in matrix B.
  * Algorithm uses SSE2.
  *
  * Example:
  \verbatim
-     A	   col      B	
-  | 1| 2| , 0 => | 1| 3|
-  | 3| 4|
+        A	         B	
+  | 1| 2| 3| 4|    | 1| 5| 9|13|
+  | 5| 6| 7| 8| => | 2| 6|10|14|
+  | 9|10|11|12|    | 3| 7|11|15|
+  |13|14|15|16|    | 4| 8|12|16|
  \endverbatim
  *
  * @param[in]	a source matrix
  * @param[out]	b destination array
- * @param[in]	col column to convert
- * @param[in]	rows number of rows of matrix A
- * @param[in]	cols number of columns of matrix A
+ * @param[in]	rows number of rows of matrix A and number of columns of matrix B
+ * @param[in]	cols number of columns of matrix A and number of rows of matrix A
  *
  */
 void transpose_matrix_double_sse2(double **a, double **b, int rows, int cols)
@@ -5415,16 +5397,67 @@ void sub_matrix2array_double_sse2(double **a, double *b, int row, int col, int r
 	}
 }
 
+/**
+ * Convert a matrix A to a linear matrix B.
+ * Algorithm uses SSE2.
+ *
+ * Example:
+ \verbatim
+        A	               B	
+  | 1| 5| 9|13| => | 1| 2| 3| 4| 5| 6| 7| 8|
+  | 2| 6|10|14|
+ \endverbatim
+ *
+ * @param[in]	a source matrix
+ * @param[out]	b destination array
+ * @param[in]	rows number of rows of matrix A and number of columns of matrix B
+ * @param[in]	cols number of columns of matrix A and number of rows of matrix A
+ *
+ */
 void matrix2linear_matrix_float_sse2(float **a, float *b, int rows, int cols)
 {
 	sub_matrix2array_float_sse2(a, b, 0, 0, rows, cols);	
 }
 
+/**
+ * Convert a matrix A to a linear matrix B.
+ * Algorithm uses SSE2.
+ *
+ * Example:
+ \verbatim
+    A	               B	
+  | 1| 5| 9|13| => | 1| 2| 3| 4| 5| 6| 7| 8|
+  | 2| 6|10|14|
+ \endverbatim
+ *
+ * @param[in]	a source matrix
+ * @param[out]	b destination array
+ * @param[in]	rows number of rows of matrix A and number of columns of matrix B
+ * @param[in]	cols number of columns of matrix A and number of rows of matrix A
+ *
+ */
 void matrix2linear_matrix_double_sse2(double **a, double *b, int rows, int cols)
 {
 	sub_matrix2array_double_sse2(a, b, 0, 0, rows, cols);	
 }
 
+/**
+ * Convert a linear matrix A to a matrix B.
+ * Algorithm uses SSE2.
+ *
+ * Example:
+ \verbatim
+        A	                     B	
+  | 1| 2| 3| 4| 5| 6| 7| 8| => | 1| 5| 9|13|
+                               | 2| 6|10|14|
+ \endverbatim
+ *
+ * @param[in]	a source matrix
+ * @param[out]	b destination array
+ * @param[in]	rows number of rows of matrix A and number of columns of matrix B
+ * @param[in]	cols number of columns of matrix A and number of rows of matrix A
+ *
+ */
 void linear_matrix2matrix_float_sse2(float *a, float **b, int rows, int cols)
 {
 	int i = 0;
@@ -5441,6 +5474,23 @@ void linear_matrix2matrix_float_sse2(float *a, float **b, int rows, int cols)
 	}
 }
 
+/**
+ * Convert a linear matrix A to a matrix B.
+ * Algorithm uses SSE2.
+ *
+ * Example:
+ \verbatim
+        A	                     B	
+  | 1| 2| 3| 4| 5| 6| 7| 8| => | 1| 5| 9|13|
+                               | 2| 6|10|14|
+ \endverbatim
+ *
+ * @param[in]	a source matrix
+ * @param[out]	b destination array
+ * @param[in]	rows number of rows of matrix A and number of columns of matrix B
+ * @param[in]	cols number of columns of matrix A and number of rows of matrix A
+ *
+ */
 void linear_matrix2matrix_double_sse2(double *a, double **b, int rows, int cols)
 {
 	int i = 0;

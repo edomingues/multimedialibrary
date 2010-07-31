@@ -22,7 +22,6 @@ using namespace std;
 char sumelem_char(char *a, int size);
 char sumelem_char_sse2(char *a, int size);
 char sumelem_char_unrolled_sse2(char *a, int size);
-char sumelem_char_unrolled2_sse2(char *a, int size);
 
 int sumelem_int(int *a, int size);
 int sumelem_int_sse2(int *a, int size);

@@ -3231,49 +3231,68 @@ void col2row_float_sse2(float **a, float *b, int col, int rows, int cols)
 			b[i] = a[i][col];
 }
 
-void matTransposta(float **a, float **b)
+void transpose_matrix_float(float **a, float **b, int rows, int cols)
 {
-	int i = 0;	
+	int i = 0, j = 0;
+
+	for(i = 0; i < rows; i++)
+		for(j = 0; j < cols; j++)
+			b[j][i] = a[i][j]; 
+}
+
+void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
+{
+	int i = 0, j = 0, lengthRows = (rows / 4) * 4, lengthCols = (cols / 4) * 4;	
 	
-	__asm__ volatile
-	( // instruction             comment
-        "\n\t movdqa	%4,%%xmm0	\t#"
-        "\n\t movdqa	%5,%%xmm1	\t#"
-	"\n\t movdqa	%6,%%xmm2	\t#"
-	"\n\t movdqa	%7,%%xmm3	\t#"
-	"\n\t movdqa	%4,%%xmm4	\t#"
-	"\n\t movdqa	%5,%%xmm5	\t#"
-	"\n\t movdqa	%6,%%xmm6	\t#"
-        "\n\t movdqa	%7,%%xmm7	\t#"
-        "\n\t unpcklps  %%xmm2,%%xmm0	\t#"
-	"\n\t unpcklps	%%xmm3,%%xmm1	\t#"
-	"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
-	"\n\t unpcklps  %%xmm6,%%xmm4	\t#"
-	"\n\t unpcklps	%%xmm7,%%xmm5	\t#"
-	"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
-	"\n\t movdqa    %%xmm0,%0	\t#"
-        "\n\t movdqa    %%xmm4,%1	\t#"
-	"\n\t movdqa	%4,%%xmm0	\t#"
-        "\n\t movdqa	%5,%%xmm1	\t#"
-	"\n\t movdqa	%4,%%xmm4	\t#"
-        "\n\t movdqa	%5,%%xmm5	\t#"
-	"\n\t unpckhps  %%xmm2,%%xmm0	\t#"
-	"\n\t unpckhps	%%xmm3,%%xmm1	\t#"
-	"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
-	"\n\t unpckhps  %%xmm6,%%xmm4	\t#"
-	"\n\t unpckhps	%%xmm7,%%xmm5	\t#"
-	"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
-        "\n\t movdqa     %%xmm0,%2	\t#"
-	"\n\t movdqa     %%xmm4,%3	\t#"
-	: "=m" (b[i][0]),      // %0
-	  "=m" (b[i+1][0]),    // %1
-	  "=m" (b[i+2][0]),    // %2
-	  "=m" (b[i+3][0])     // %3
-	: "m"  (a[i][0]),      // %4
-	  "m"  (a[i+1][0]),    // %5
-	  "m"  (a[i+2][0]),    // %6
-	  "m"  (a[i+3][0])     // %7
-	);
+	for(j = 0; j < cols; j += 4)
+	{
+		for(i = 0; i < rows; i += 4)
+		{
+			__asm__ volatile
+			( // instruction             comment
+			"\n\t movdqa	%4,%%xmm0	\t#"
+			"\n\t movdqa	%5,%%xmm1	\t#"
+			"\n\t movdqa	%6,%%xmm2	\t#"
+			"\n\t movdqa	%7,%%xmm3	\t#"
+			"\n\t movdqa	%4,%%xmm4	\t#"
+			"\n\t movdqa	%5,%%xmm5	\t#"
+			"\n\t movdqa	%6,%%xmm6	\t#"
+			"\n\t movdqa	%7,%%xmm7	\t#"
+			"\n\t unpcklps  %%xmm2,%%xmm0	\t#"
+			"\n\t unpcklps	%%xmm3,%%xmm1	\t#"
+			"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
+			"\n\t unpcklps  %%xmm6,%%xmm4	\t#"
+			"\n\t unpcklps	%%xmm7,%%xmm5	\t#"
+			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
+			"\n\t movdqa    %%xmm0,%0	\t#"
+			"\n\t movdqa    %%xmm4,%1	\t#"
+			"\n\t movdqa	%4,%%xmm0	\t#"
+			"\n\t movdqa	%5,%%xmm1	\t#"
+			"\n\t movdqa	%4,%%xmm4	\t#"
+			"\n\t movdqa	%5,%%xmm5	\t#"
+			"\n\t unpckhps  %%xmm2,%%xmm0	\t#"
+			"\n\t unpckhps	%%xmm3,%%xmm1	\t#"
+			"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
+			"\n\t unpckhps  %%xmm6,%%xmm4	\t#"
+			"\n\t unpckhps	%%xmm7,%%xmm5	\t#"
+			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
+			"\n\t movdqa     %%xmm0,%2	\t#"
+			"\n\t movdqa     %%xmm4,%3	\t#"
+			: "=m" (b[j][i]),      // %0
+			  "=m" (b[j+1][i]),    // %1
+			  "=m" (b[j+2][i]),    // %2
+			  "=m" (b[j+3][i])     // %3
+			: "m"  (a[i][j]),      // %4
+			  "m"  (a[i+1][j]),    // %5
+			  "m"  (a[i+2][j]),    // %6
+			  "m"  (a[i+3][j])     // %7
+			);
+		}
+	}
+
+	for(i = lengthRows; i < rows; i++)
+		for(j = lengthCols; j < cols; j++)
+			b[j][i] = a[i][j];
 }
 
 /**

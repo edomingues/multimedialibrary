@@ -7,11 +7,11 @@
 
 #define SIZE 1000000
 #define SIZE2 100
-#define COLS 1000
-#define ROWS 1000
+#define COLS 5000
+#define ROWS 5000
 #define COLS2 10
 #define ROWS2 10
-#define REPEAT 1
+#define REPEAT 100
 
 using namespace std;
 
@@ -1770,6 +1770,47 @@ void testConvolutionLinear()
 	print_array_float(result_float2, SIZE);*/
 }
 
+void testTransposeMatrix()
+{
+	clock_t init, end;
+	float time1, time2;
+
+	float **matrix_float = create_matrix_float(ROWS, COLS);
+	float **result_float1 = create_matrix_float(ROWS, COLS);
+	float **result_float2 = create_matrix_float(ROWS, COLS);
+
+	fill_matrix_random_float(matrix_float, ROWS, COLS);
+
+	/*** float ***/
+	init = clock();
+	for(int i=0; i<REPEAT; i++)
+		transpose_matrix_float(matrix_float, result_float1, ROWS, COLS);
+	end = clock();
+	time1 = (end-init)/(CLOCKS_PER_SEC*1.0);
+
+	cout << "transpose_matrix_float time: " << time1 << endl;
+
+	init = clock();
+	for(int i=0; i<REPEAT; i++)
+		transpose_matrix_float(matrix_float, result_float2, ROWS, COLS);
+	end = clock();
+	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
+
+	cout << "transpose_matrix_float_sse2 time: " << time2 << endl;
+
+	cout << "speedup: " << time1/time2 << endl;
+
+	cout << "Compare Result: ";
+	if(isEqual_matrix_float(result_float1, result_float2, ROWS, COLS))
+		cout << "Equal" << endl;
+	else
+		cout << "Not Equal!" << endl;
+
+	destroy_matrix_float(&matrix_float, ROWS);
+	destroy_matrix_float(&result_float1, ROWS);
+	destroy_matrix_float(&result_float2, ROWS);
+}
+
 void testConvolutionMatrix()
 {
 	clock_t init, end;
@@ -1875,16 +1916,7 @@ int main (void)
 	//testConvolutionMatrix();
 	//testCmp();
 	
-	float **a = create_matrix_float(4,4), **b = create_matrix_float(4,4);
-
-	for(int i  = 0; i < 4; i++)
-		for(int j = 0; j < 4; j++ )
-			a[i][j]= ((i) * 4) + j + 1;
-
-	matTransposta(a, b);
-
-	print_matrix_float(a, 4, 4);
-	print_matrix_float(b, 4, 4);
+	testTransposeMatrix();
 		
 	return 0;
 }

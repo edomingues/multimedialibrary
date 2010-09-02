@@ -7,11 +7,11 @@
 
 #define SIZE 1000000
 #define SIZE2 100
-#define COLS 500
-#define ROWS 500
+#define COLS 4
+#define ROWS 4
 #define COLS2 10
 #define ROWS2 10
-#define REPEAT 10
+#define REPEAT 1
 
 using namespace std;
 
@@ -1797,7 +1797,7 @@ void testTransposeMatrix()
 
 	init = clock();
 	for(int i=0; i<REPEAT; i++)
-		transpose_matrix_float(matrix_float, result_float2, ROWS, COLS);
+		transpose_matrix_float_sse2(matrix_float, result_float2, ROWS, COLS);
 	end = clock();
 	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
 
@@ -1942,7 +1942,7 @@ int main (void)
 	//testDotProduct();
 	//testSummatrix();
 	//testSumLinearMatrix();
-	//testTransposeMatrix();
+	testTransposeMatrix();
 	testMulmatrix();
 	//testMax();
 	//testMin();

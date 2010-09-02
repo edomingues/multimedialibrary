@@ -3080,14 +3080,26 @@ void transpose_matrix_float(float **a, float **b, int rows, int cols)
  * @param[in]	cols number of columns of matrix A and number of rows of matrix A
  *
  */
+
 void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 {
-	int i = 0, j = 0, lengthRows = (rows / 4) * 4, lengthCols = (cols / 4) * 4;	
-	
+	int i = 0, j = 0, lengthRows = (rows / 4) * 4, lengthCols = (cols / 4) * 4;
+	float *a0 = NULL, *a1 = NULL, *a2 = NULL, *a3 = NULL,
+	      *b0 = NULL, *b1 = NULL, *b2 = NULL, *b3 = NULL;
+
 	for(j = 0; j < lengthCols; j += 4)
 	{
 		for(i = 0; i < lengthRows; i += 4)
 		{
+			a0 = &(a[i][j]);
+			a1 = &(a[i+1][j]);
+			a2 = &(a[i+2][j]);
+		       	a3 = &(a[i+3][j]);
+			b0 = &(b[j][i]);
+			b1 = &(b[j+1][i]);
+			b2 = &(b[j+2][i]);
+			b3 = &(b[j+3][i]);
+
 			__asm__ volatile
 			( // instruction             comment
 			"\n\t movdqa	%4,%%xmm0	\t#"
@@ -3118,14 +3130,14 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
 			"\n\t movdqa     %%xmm0,%2	\t#"
 			"\n\t movdqa     %%xmm4,%3	\t#"
-			: "=m" (b[j][i]),      // %0
-			  "=m" (b[j+1][i]),    // %1
-			  "=m" (b[j+2][i]),    // %2
-			  "=m" (b[j+3][i])     // %3
-			: "m"  (a[i][j]),      // %4
-			  "m"  (a[i+1][j]),    // %5
-			  "m"  (a[i+2][j]),    // %6
-			  "m"  (a[i+3][j])     // %7
+			: "=m" (*b0),    // %0
+			  "=m" (*b1),    // %1
+			  "=m" (*b2),    // %2
+			  "=m" (*b3)     // %3
+			: "m"  (*a0),    // %4
+			  "m"  (*a1),    // %5
+			  "m"  (*a2),    // %6
+			  "m"  (*a3)     // %7
 			);
 		}
 	}
@@ -3138,6 +3150,77 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 		for(j = 0; j < lengthCols; j++)
 			b[j][i] = a[i][j];
 }
+
+
+/*
+void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
+{
+	int i = 0, j = 0, lengthRows = (rows / 4) * 4, lengthCols = (cols / 4) * 4;	
+	
+	for(j = 0; j < lengthCols; j += 4)
+	{
+		for(i = 0; i < lengthRows; i += 4)
+		{
+                        float *a0=&(a[i][j]), *a1=&(a[i+1][j]), *a2=&(a[i+2][j]), *a3=&(a[i+3][j]);
+
+			__asm__ volatile
+			( // instruction             comment
+			"\n\t movdqa	%2,%%xmm0	\t#"
+			"\n\t movdqa	%3,%%xmm1	\t#"
+			"\n\t movdqa	%4,%%xmm2	\t#"
+			"\n\t movdqa	%5,%%xmm3	\t#"
+			"\n\t movdqa	%2,%%xmm4	\t#"
+			"\n\t movdqa	%3,%%xmm5	\t#"
+			"\n\t movdqa	%4,%%xmm6	\t#"
+			"\n\t movdqa	%5,%%xmm7	\t#"
+			"\n\t unpcklps  %%xmm2,%%xmm0	\t#"
+			"\n\t unpcklps	%%xmm3,%%xmm1	\t#"	
+			"\n\t unpcklps  %%xmm6,%%xmm4	\t#"
+			"\n\t unpcklps	%%xmm7,%%xmm5	\t#"
+			"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
+			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
+			"\n\t movdqa    %%xmm0,%0	\t#"
+			"\n\t movdqa    %%xmm4,%1	\t#"
+			"\n\t movdqa	%2,%%xmm0	\t#"
+			"\n\t movdqa	%3,%%xmm1	\t#"
+			"\n\t movdqa	%2,%%xmm4	\t#"
+			"\n\t movdqa	%3,%%xmm5	\t#"
+			"\n\t unpckhps  %%xmm2,%%xmm0	\t#"
+			"\n\t unpckhps	%%xmm3,%%xmm1	\t#"
+			"\n\t unpckhps  %%xmm6,%%xmm4	\t#"
+			"\n\t unpckhps	%%xmm7,%%xmm5	\t#"
+			"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
+			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
+			: "=m" (b[j][i]),      // %0
+			  "=m" (b[j+1][i])    // %1
+			: "m"  (a0),      // %2
+			  "m"  (a1),    // %3
+			  "m"  (a2),    // %4
+			  "m"  (a3)     // %5
+			);
+
+
+			__asm__ volatile
+			( // instruction             comment
+			"\n\t movdqa     %%xmm0,%0	\t#"
+			"\n\t movdqa     %%xmm4,%1	\t#"
+			: "=m" (b[j+2][i]),    // %0
+			  "=m" (b[j+3][i])     // %1
+                        :
+			);
+
+		}
+	}
+
+	for(i = 0; i < rows; i++)
+		for(j = lengthCols; j < cols; j++)
+			b[j][i] = a[i][j];
+
+	for(i = lengthRows; i < rows; i++)
+		for(j = 0; j < lengthCols; j++)
+			b[j][i] = a[i][j];
+}
+*/
 
 /**
  * Calculates the transpose of matrix A and store it in matrix B.

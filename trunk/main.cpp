@@ -5,13 +5,13 @@
 #include "libMultimedia.h"
 #include "dataStructure.h"
 
-#define SIZE 1000000
+#define SIZE 10000
 #define SIZE2 100
-#define COLS 4
-#define ROWS 4
+#define COLS 1000
+#define ROWS 1000
 #define COLS2 10
 #define ROWS2 10
-#define REPEAT 1
+#define REPEAT 1000
 
 using namespace std;
 
@@ -102,15 +102,6 @@ void testSumelem()
 
 	init = clock();
 	for(int i=0; i<REPEAT; i++)
-		result_int3 = sumelem_int_sse3(array_int, SIZE);
-	end = clock();
-	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
-
-	cout << "sumelem_int_sse3 time: " << time2 << endl;
-	cout << "speedup : " << time1/time2 << endl;
-
-	init = clock();
-	for(int i=0; i<REPEAT; i++)
 		result_int4 = sumelem_int_unrolled_sse2(array_int, SIZE);
 	end = clock();
 	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
@@ -141,15 +132,6 @@ void testSumelem()
 	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
 
 	cout << "sumelem_float_sse2 time: " << time2 << endl;
-	cout << "speedup : " << time1/time2 << endl;
-
-	init = clock();
-	for(int i=0; i<REPEAT; i++)
-		result_float3 = sumelem_float_sse3(array_float, SIZE);
-	end = clock();
-	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
-
-	cout << "sumelem_float_sse3 time: " << time2 << endl;
 	cout << "speedup : " << time1/time2 << endl;
 
 	init = clock();
@@ -186,15 +168,6 @@ void testSumelem()
 	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
 
 	cout << "sumelem_double_sse2 time: " << time2 << endl;
-	cout << "speedup : " << time1/time2 << endl;
-
-	init = clock();
-	for(int i=0; i<REPEAT; i++)
-		result_double3 = sumelem_double_sse3(array_double, SIZE);
-	end = clock();
-	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
-
-	cout << "sumelem_double_sse3 time: " << time2 << endl;
 	cout << "speedup : " << time1/time2 << endl;
 
 	init = clock();
@@ -1936,20 +1909,18 @@ int main (void)
 {	
 	srandom(time(NULL));
 
-	//testSumelem();
+	testSumelem();
 	//testSumarray();
 	//testMularray();
 	//testDotProduct();
 	//testSummatrix();
 	//testSumLinearMatrix();
-	testTransposeMatrix();
-	testMulmatrix();
+	//testTransposeMatrix();
+	//testMulmatrix();
 	//testMax();
 	//testMin();
 	//testMemCpy();
 	//testConvolutionLinear();
 	//testConvolutionMatrix();
 	//testCmp();
-	
-	return 0;
 }

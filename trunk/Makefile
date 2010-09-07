@@ -2,11 +2,10 @@ TARGET  := main
 SRCS    := ${wildcard *.cpp} 
 OBJS    := ${SRCS:.cpp=.o} 
 
-CCFLAGS =
+CCFLAGS = -Wall -fpic -O3
 LDFLAGS = 
 LIBS    =
 INCL	=
-OPT	= -Wall -O3
 CC	= g++
 
 

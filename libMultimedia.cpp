@@ -113,25 +113,19 @@ char sumelem_char_unrolled_sse2(char *a, int size)
 	{
 		__asm__ volatile
 		(// instruction		 comment
-		 "\n\t movdqa %0,%%xmm2 \t#"
-		 "\n\t movdqa %1,%%xmm3 \t#"
-		 "\n\t movdqa %2,%%xmm4 \t#"
-		 "\n\t movdqa %3,%%xmm5 \t#"
-		 "\n\t movdqa %4,%%xmm6 \t#"
-		 "\n\t movdqa %5,%%xmm7 \t#"
-		 "\n\t paddb %%xmm2,%%xmm0 \t#"
-		 "\n\t paddb %%xmm5,%%xmm1 \t#"
-		 "\n\t paddb %%xmm3,%%xmm0 \t#"
-		 "\n\t paddb %%xmm6,%%xmm1 \t#"
-		 "\n\t paddb %%xmm4,%%xmm0 \t#"
-		 "\n\t paddb %%xmm7,%%xmm1 \t#"
-		 :
-		 :"m"  (a[i]),       // %0
-		  "m"  (a[i+16]),    // %1
-		  "m"  (a[i+32]),    // %2
-		  "m"  (a[i+48]),    // %3
-		  "m"  (a[i+64]),    // %4
-		  "m"  (a[i+80])     // %5
+		 "\n\t movdqa 0x00(%0),%%xmm2 \t#"
+		 "\n\t movdqa 0x10(%0),%%xmm3 \t#"
+		 "\n\t movdqa 0x20(%0),%%xmm4 \t#"
+		 "\n\t movdqa 0x30(%0),%%xmm5 \t#"
+		 "\n\t movdqa 0x40(%0),%%xmm6 \t#"
+		 "\n\t movdqa 0x50(%0),%%xmm7 \t#"
+		 "\n\t paddb %%xmm2,%%xmm0    \t#"
+		 "\n\t paddb %%xmm5,%%xmm1    \t#"
+		 "\n\t paddb %%xmm3,%%xmm0    \t#"
+		 "\n\t paddb %%xmm6,%%xmm1    \t#"
+		 "\n\t paddb %%xmm4,%%xmm0    \t#"
+		 "\n\t paddb %%xmm7,%%xmm1    \t#"
+		 : :"r"  (a+i)      // %0
 		);
 	}
 
@@ -139,16 +133,13 @@ char sumelem_char_unrolled_sse2(char *a, int size)
 	{
 		__asm__ volatile
 		(// instruction             comment
-		 "\n\t movdqa %0,%%xmm2 \t#"
-		 "\n\t movdqa %1,%%xmm3 \t#"
-		 "\n\t movdqa %2,%%xmm4 \t#"
-		 "\n\t paddb %%xmm2,%%xmm0 \t#"
-		 "\n\t paddb %%xmm4,%%xmm1 \t#"
-		 "\n\t paddb %%xmm3,%%xmm0 \t#"
-		 :
-		 :"m"  (a[i]),       // %0
-		  "m"  (a[i+16]),    // %1
-		  "m"  (a[i+32])     // %2
+		 "\n\t movdqa 0x00(%0),%%xmm2 \t#"
+		 "\n\t movdqa 0x10(%0),%%xmm3 \t#"
+		 "\n\t movdqa 0x20(%0),%%xmm4 \t#"
+		 "\n\t paddb %%xmm2,%%xmm0    \t#"
+		 "\n\t paddb %%xmm4,%%xmm1    \t#"
+		 "\n\t paddb %%xmm3,%%xmm0    \t#"
+		 : :"r"  (a+i) // %0
 		);
 	}
 
@@ -218,7 +209,8 @@ int sumelem_int_sse2(int *a, int size)
 	for (i = 0; i < length; i += 4)
 	{
 		__asm__ volatile
-                ("paddd %0,%%xmm0": :"m" (a[i]));
+                ("paddd 0x00(%0),%%xmm0"
+		 : :"r" (a+i));
 
 	}
 	
@@ -258,32 +250,27 @@ int sumelem_int_unrolled_sse2(int *a, int size)
 	int rv = 0;
 
 	__asm__ volatile
-        ("\n\tmovdqa %0,%%xmm0\t#"
-	 "\n\tmovdqa %0,%%xmm1\t#" : :"m" (b[0]));
+        ("\n\tmovdqa 0x00(%0),%%xmm0 \t#"
+	 "\n\tmovdqa 0x00(%0),%%xmm1 \t#"
+	 : :"r" (b));
 
 	for (; i < length6; i += 24)
 	{
 		__asm__ volatile
 		(// instruction		 comment
-		 "\n\t movdqa %0,%%xmm2 \t#"
-		 "\n\t movdqa %1,%%xmm3 \t#"
-		 "\n\t movdqa %2,%%xmm4 \t#"
-		 "\n\t movdqa %3,%%xmm5 \t#"
-		 "\n\t movdqa %4,%%xmm6 \t#"
-		 "\n\t movdqa %5,%%xmm7 \t#"
-		 "\n\t paddd %%xmm2,%%xmm0 \t#"
-		 "\n\t paddd %%xmm5,%%xmm1 \t#"
-		 "\n\t paddd %%xmm3,%%xmm0 \t#"
-		 "\n\t paddd %%xmm6,%%xmm1 \t#"
-		 "\n\t paddd %%xmm4,%%xmm0 \t#"
-		 "\n\t paddd %%xmm7,%%xmm1 \t#"
-		 :
-		 :"m"  (a[i]),       // %0
-		  "m"  (a[i+4]),     // %1
-		  "m"  (a[i+8]),     // %2
-		  "m"  (a[i+12]),    // %3
-		  "m"  (a[i+16]),    // %4
-		  "m"  (a[i+20])     // %5
+		 "\n\t movdqa 0x00(%0),%%xmm2 \t#"
+		 "\n\t movdqa 0x10(%0),%%xmm3 \t#"
+		 "\n\t movdqa 0x20(%0),%%xmm4 \t#"
+		 "\n\t movdqa 0x30(%0),%%xmm5 \t#"
+		 "\n\t movdqa 0x40(%0),%%xmm6 \t#"
+		 "\n\t movdqa 0x50(%0),%%xmm7 \t#"
+		 "\n\t paddd %%xmm2,%%xmm0    \t#"
+		 "\n\t paddd %%xmm5,%%xmm1    \t#"
+		 "\n\t paddd %%xmm3,%%xmm0    \t#"
+		 "\n\t paddd %%xmm6,%%xmm1    \t#"
+		 "\n\t paddd %%xmm4,%%xmm0    \t#"
+		 "\n\t paddd %%xmm7,%%xmm1    \t#"
+		 : :"r"  (a+i) // %0 
 		);
 	}
 
@@ -291,28 +278,25 @@ int sumelem_int_unrolled_sse2(int *a, int size)
 	{
 		__asm__ volatile
 		(// instruction             comment
-		 "\n\t movdqa %0,%%xmm2 \t#"
-		 "\n\t movdqa %1,%%xmm3 \t#"
-		 "\n\t movdqa %2,%%xmm4 \t#"
-		 "\n\t paddd %%xmm2,%%xmm0 \t#"
-		 "\n\t paddd %%xmm4,%%xmm1 \t#"
-		 "\n\t paddd %%xmm3,%%xmm0 \t#"
-		 :
-		 :"m"  (a[i]),       // %0
-		  "m"  (a[i+4]),     // %1
-		  "m"  (a[i+8])      // %2
+		 "\n\t movdqa 0x00(%0),%%xmm2 \t#"
+		 "\n\t movdqa 0x10(%0),%%xmm3 \t#"
+		 "\n\t movdqa 0x20(%0),%%xmm4 \t#"
+		 "\n\t paddd %%xmm2,%%xmm0    \t#"
+		 "\n\t paddd %%xmm4,%%xmm1    \t#"
+		 "\n\t paddd %%xmm3,%%xmm0    \t#"
+		 : :"r"  (a+i) // %0
 		);
 	}
 
 	for (; i < length; i += 4)
 	{
 		__asm__ volatile
-                ("paddd %0,%%xmm0" : :"m" (a[i]));
+                ("paddd 0x00(%0),%%xmm0" : :"r" (a+i));
 	}
 
 	__asm__ volatile
-        ("\n\t paddd %%xmm1,%%xmm0 \t#"
-	 "\n\t movdqa %%xmm0,%0    \t#" :"=m" (b[0]): );
+        ("\n\t paddd %%xmm1,%%xmm0    \t#"
+	 "\n\t movdqa %%xmm0,0x00(%0) \t#" : :"r" (b));
 	
 	rv = b[0]+b[1]+b[2]+b[3];
 	
@@ -321,104 +305,6 @@ int sumelem_int_unrolled_sse2(int *a, int size)
 		rv = rv + a[i];
 	}
 	
-	return rv;
-}
-
-/**
- * Calculate the sum of all elements in a array of integers.
- * Algorithm uses SSE3 instructions.
- *
- * Example:
- \verbatim
-       A
-  | 1| 2| 3| => 6
- \endverbatim
- *
- * @param[in]	a array with the elements to sum
- * @param[in]	size size of the array
- * @return sum of the elements in the array	
- *
- */
-int sumelem_int_sse3(int *a, int size)
-{
-	int __attribute__ ((aligned(16))) b[size];
-	int i = 0, j = 0, rv = 0;
-
-	int maxLength, length;
-
-	if(size > 12)
-	{
-		maxLength = (size / 4) * 4;
-		length = maxLength;
-	}
-	else
-	{
-		maxLength = (size / 8) * 8;
-		length = maxLength;
-	}
-
-	for (i = 0, j = 0; i < (length/8) * 8; i+=8, j+=4)
-	{
-
-			__asm__ volatile
-                	( // instruction             comment
-                	"\n\t movdqa     %1,%%xmm0         \t#"
-                	"\n\t movdqa     %2,%%xmm1         \t#"
-                	"\n\t phaddd      %%xmm0,%%xmm1     \t#"
-                	"\n\t movdqa     %%xmm1,%0         \t#"
-			: "=m" (b[j])      // %0
-			: "m"  (a[i+4]),   // %1
-		  	  "m"  (a[i])      // %2
-			);
-
-		}
-
-		if(length % 8 != 0)
-		{
-			b[j] = a[length - 4];
-			b[j+1] = a[length - 3];
-			b[j+2] = a[length - 2];
-			b[j+3] = a[length - 1];
-
-			length = (length / 8) * 4 + 4;
-		}
-		else
-			length = length / 2;
-
-	while(length > 4)
-	{
-		for (i = 0, j = 0; i < (length/8) * 8; i+=8, j+=4)
-		{
-			__asm__ volatile
-                	( // instruction             comment
-                	"\n\t movdqa     %1,%%xmm0         \t#"
-                	"\n\t movdqa     %2,%%xmm1         \t#"
-                	"\n\t phaddd      %%xmm0,%%xmm1     \t#"
-                	"\n\t movdqa     %%xmm1,%0         \t#"
-			: "=m" (b[j])      // %0
-			: "m"  (b[i+4]),   // %1
-		  	  "m"  (b[i])      // %2
-			);
-		}
-
-		if((length > 8) && (length % 8 != 0))
-		{
-			b[j] = b[length - 4];
-			b[j+1] = b[length - 3];
-			b[j+2] = b[length - 2];
-			b[j+3] = b[length - 1];
-
-			length = (length / 8) * 4 + 4;
-		}
-		else
-			length = length / 2;
-	}
-
-	rv = b[0] + b[1] + b[2] + b[3];
-
-	for(i = maxLength; i < size; i++)
-		rv = rv + a[i];
-
 	return rv;
 }
 
@@ -589,103 +475,6 @@ float sumelem_float_unrolled_sse2(float *a, int size)
 }
 
 /**
- * Calculate the sum of all elements in a array of floats.
- * Algorithm uses SSE3 instructions.
- *
- * Example:
- \verbatim
-       A
-  | 1| 2| 3| => 6
- \endverbatim
- *
- * @param[in]	a array with the elements to sum
- * @param[in]	size size of the array
- * @return sum of the elements in the array	
- *
- */
-float sumelem_float_sse3(float *a, int size)
-{
-	float __attribute__ ((aligned(16))) b[size];
-	int i = 0, j = 0;
-	float rv = 0;
-
-	int maxLength, length;
-
-	if(size >= 12)
-	{
-		maxLength = (size / 4) * 4;
-		length = maxLength;
-	}
-	else
-	{
-		maxLength = (size / 8) * 8;
-		length = maxLength;
-	}
-
-	for (i = 0, j = 0; i < (length/8) * 8; i+=8, j+=4)
-	{
-		__asm__ volatile
-                ( // instruction             comment
-                "\n\t movdqa     %1,%%xmm0         \t#"
-                "\n\t movdqa     %2,%%xmm1         \t#"
-                "\n\t haddps     %%xmm0,%%xmm1     \t#"
-                "\n\t movdqa     %%xmm1,%0         \t#"
-		: "=m" (b[j])      // %0
-		: "m"  (a[i+4]),   // %1
-		  "m"  (a[i])      // %2
-		);
-	}
-
-	if(length % 8 != 0)
-	{
-		b[j] = a[length - 4];
-		b[j+1] = a[length - 3];
-		b[j+2] = a[length - 2];
-		b[j+3] = a[length - 1];
-
-		length = (length / 8) * 4 + 4;
-	}
-	else
-		length = length / 2;
-
-	while(length > 4)
-	{
-		for (i = 0, j = 0; i < (length/8) * 8; i+=8, j+=4)
-		{
-			__asm__ volatile
-                	( // instruction             comment
-                	"\n\t movdqa     %1,%%xmm0         \t#"
-                	"\n\t movdqa     %2,%%xmm1         \t#"
-                	"\n\t haddps     %%xmm0,%%xmm1     \t#"
-                	"\n\t movdqa     %%xmm1,%0         \t#"
-			: "=m" (b[j])      // %0
-			: "m"  (b[i+4]),   // %1
-		  	  "m"  (b[i])      // %2
-			);
-		}
-
-		if((length > 8) && (length % 8 != 0))
-		{
-			b[j] = b[length - 4];
-			b[j+1] = b[length - 3];
-			b[j+2] = b[length - 2];
-			b[j+3] = b[length - 1];
-
-			length = (length / 8) * 4 + 4;
-		}
-		else
-			length = length / 2;
-	}
-
-	rv = b[0] + b[1] + b[2] + b[3];
-
-	for(i = maxLength; i < size; i++)
-		rv = rv + a[i];
-
-	return rv;
-}
-
-/**
  * Calculate the sum of all elements in a array of doubles.
  * Classic algorithm.
  *
@@ -840,99 +629,6 @@ double sumelem_double_unrolled_sse2(double *a, int size)
 		rv = rv + a[i];
 	}
 	
-	return rv;
-}
-
-/**
- * Calculate the sum of all elements in a array of doubles.
- * Algorithm uses SSE3 instructions.
- *
- * Example:
- \verbatim
-       A
-  | 1| 2| 3| => 6
- \endverbatim
- *
- * @param[in]	a array with the elements to sum
- * @param[in]	size size of the array
- * @return sum of the elements in the array	
- *
- */
-double sumelem_double_sse3(double *a, int size)
-{
-	double __attribute__ ((aligned(16))) b[size];
-	int i = 0, j = 0;
-	double rv = 0;
-
-	int maxLength, length;
-
-	if(size >= 6)
-	{
-		maxLength = (size / 2) * 2;
-		length = maxLength;
-	}
-	else
-	{
-		maxLength = (size / 4) * 4;
-		length = maxLength;
-	}
-
-	for (i = 0, j = 0; i < (length/4)*4; i+=4, j+=2)
-	{
-		__asm__ volatile
-                ( // instruction             comment
-                "\n\t movdqa     %1,%%xmm0         \t#"
-                "\n\t movdqa     %2,%%xmm1         \t#"
-                "\n\t haddpd     %%xmm0,%%xmm1     \t#"
-                "\n\t movdqa     %%xmm1,%0         \t#"
-		: "=m" (b[j])      // %0
-		: "m"  (a[i+2]),   // %1
-		  "m"  (a[i])      // %2
-		);
-	}
-
-	if(length % 4 != 0)
-	{
-		b[j] = a[length - 2];
-		b[j+1] = a[length - 1];
-
-		length = (length / 4) * 2 + 2;
-	}
-	else
-		length = length / 2;
-
-	while(length > 2)
-	{
-		for (i = 0, j = 0; i < (length/4)*4; i+=4, j+=2)
-		{
-			__asm__ volatile
-                	( // instruction             comment
-                	"\n\t movdqa     %1,%%xmm0         \t#"
-                	"\n\t movdqa     %2,%%xmm1         \t#"
-                	"\n\t haddpd     %%xmm0,%%xmm1     \t#"
-                	"\n\t movdqa     %%xmm1,%0         \t#"
-			: "=m" (b[j])      // %0
-			: "m"  (b[i+2]),   // %1
-		  	  "m"  (b[i])      // %2
-			);
-		}
-
-		if(length % 4 != 0)
-		{
-			b[j] = b[length - 2];
-			b[j+1] = b[length - 1];
-
-			length = (length / 4) * 2 + 2;
-		}
-		else
-			length = length / 2;
-	}
-
-	rv = b[0] + b[1];
-
-	for(i = maxLength; i < size; i++)
-		rv = rv + a[i];
-
 	return rv;
 }
 
@@ -1212,7 +908,7 @@ void sumarray_int_unrolled_sse2(int *a, int *b, int *c, int size)
 	
 	for(; i < length2; i+=8)
 	{
-		__asm__ volatile
+		/*__asm__ volatile
                 ( // instruction             comment
                 "\n\t movdqa     %2,%%xmm0         \t#"
 		"\n\t movdqa     %3,%%xmm1         \t#"
@@ -1220,14 +916,29 @@ void sumarray_int_unrolled_sse2(int *a, int *b, int *c, int size)
 		"\n\t movdqa     %5,%%xmm3         \t#"
 		"\n\t paddd      %%xmm0,%%xmm1     \t#"
 		"\n\t paddd      %%xmm2,%%xmm3     \t#"
-	        "\n\t movdqa     %%xmm1,%0         \t#"
-		"\n\t movdqa     %%xmm3,%1         \t#"
+	        "\n\t movdqa     %%xmm1,0x00(%0)         \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0)         \t#"
 		: "=m" (c[i]),     // %0
 		  "=m" (c[i+4])    // %1
 		: "m"  (a[i]),     // %2
 		  "m"  (b[i]),     // %3
 		  "m"  (a[i+4]),   // %4
 		  "m"  (b[i+4])    // %5
+		);*/
+
+		__asm__ volatile
+                ( // instruction             comment
+                "\n\t movdqa     0x00(%1),%%xmm0         \t#"
+		"\n\t movdqa     0x00(%2),%%xmm1         \t#"
+		"\n\t movdqa     0x10(%1),%%xmm2         \t#"
+		"\n\t movdqa     0x10(%2),%%xmm3         \t#"
+		"\n\t paddd      %%xmm0,%%xmm1     \t#"
+		"\n\t paddd      %%xmm2,%%xmm3     \t#"
+	        "\n\t movdqa     %%xmm1,0x00(%0)         \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0)         \t#"
+		: :"r" (c+i),      // %0
+		 "r"  (a+i),     // %1
+		  "r"  (b+i)      // %3
 		);
 	}
 
@@ -1369,7 +1080,7 @@ void sumarray_float_unrolled_sse2(float *a, float *b, float *c, int size)
 	
 	for(; i < length2; i+=8)
 	{
-		__asm__ volatile
+		/*__asm__ volatile
                 ( // instruction             comment
                 "\n\t movdqa     %2,%%xmm0         \t#"
 		"\n\t movdqa     %3,%%xmm1         \t#"
@@ -1385,6 +1096,21 @@ void sumarray_float_unrolled_sse2(float *a, float *b, float *c, int size)
 		  "m"  (b[i]),     // %3
 		  "m"  (a[i+4]),   // %4
 		  "m"  (b[i+4])    // %5
+		);*/
+
+		__asm__ volatile
+                ( // instruction             comment
+                "\n\t movdqa     0x00(%1),%%xmm0         \t#"
+		"\n\t movdqa     0x00(%2),%%xmm1         \t#"
+		"\n\t movdqa     0x10(%1),%%xmm2         \t#"
+		"\n\t movdqa     0x10(%2),%%xmm3         \t#"
+		"\n\t addps      %%xmm0,%%xmm1     \t#"
+		"\n\t addps      %%xmm2,%%xmm3     \t#"
+	        "\n\t movdqa     %%xmm1,0x00(%0)         \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0)         \t#"
+		: : "r" (c+i),      // %0
+		 "r"  (a+i),     // %1
+		  "r"  (b+i)      // %3
 		);
 	}
 
@@ -1526,7 +1252,7 @@ void sumarray_double_unrolled_sse2(double *a, double *b, double *c, int size)
 	
 	for(; i < length2; i+=4)
 	{
-		__asm__ volatile
+		/*__asm__ volatile
                 ( // instruction             comment
                 "\n\t movdqa     %2,%%xmm0         \t#"
 		"\n\t movdqa     %3,%%xmm1         \t#"
@@ -1542,6 +1268,21 @@ void sumarray_double_unrolled_sse2(double *a, double *b, double *c, int size)
 		  "m"  (b[i]),     // %3
 		  "m"  (a[i+2]),   // %4
 		  "m"  (b[i+2])    // %5
+		);*/
+
+		__asm__ volatile
+                ( // instruction             comment
+                "\n\t movdqa     0x00(%1),%%xmm0         \t#"
+		"\n\t movdqa     0x00(%2),%%xmm1         \t#"
+		"\n\t movdqa     0x10(%1),%%xmm2         \t#"
+		"\n\t movdqa     0x10(%2),%%xmm3         \t#"
+		"\n\t addpd      %%xmm0,%%xmm1           \t#"
+		"\n\t addpd      %%xmm2,%%xmm3           \t#"
+	        "\n\t movdqa     %%xmm1,0x00(%0)         \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0)         \t#"
+		: : "r" (c+i),      // %0
+		 "r"  (a+i),     // %1
+		  "r"  (b+i)      // %3
 		);
 	}
 
@@ -2207,7 +1948,7 @@ void mularray_float_unrolled_sse2(float *a, float *b, float *c, int size)
 
 	for(i = length4; i < length2; i+=8)
 	{
-		__asm__ volatile
+		/*__asm__ volatile
                 ( // instruction             comment
                 "\n\t movdqa     %2,%%xmm0         \t#"
 		"\n\t movdqa     %3,%%xmm1         \t#"
@@ -2223,6 +1964,21 @@ void mularray_float_unrolled_sse2(float *a, float *b, float *c, int size)
 		  "m"  (b[i]),     // %3
 		  "m"  (a[i+4]),   // %4
 		  "m"  (b[i+4])    // %5
+		);*/
+
+		__asm__ volatile
+                ( // instruction             comment
+                "\n\t movdqa     0x00(%1),%%xmm0         \t#"
+		"\n\t movdqa     0x00(%2),%%xmm1         \t#"
+		"\n\t movdqa     0x10(%1),%%xmm2         \t#"
+		"\n\t movdqa     0x10(%2),%%xmm3         \t#"
+		"\n\t mulps      %%xmm0,%%xmm1           \t#"
+		"\n\t mulps      %%xmm2,%%xmm3           \t#"
+	        "\n\t movdqa     %%xmm1,0x00(%0)         \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0)         \t#"
+		: : "r" (c+i),      // %0
+		"r"  (a+i),     // %1
+		  "r"  (b+i)      // %3
 		);
 	}
 		
@@ -2231,139 +1987,6 @@ void mularray_float_unrolled_sse2(float *a, float *b, float *c, int size)
 		__asm__ volatile
                 ( // instruction             comment                  
                 "\n\t movdqa     %1,%%xmm0         \t#"
-                "\n\t movdqa     %2,%%xmm1         \t#"
-                "\n\t mulps      %%xmm0,%%xmm1     \t#"
-                "\n\t movdqa     %%xmm1,%0         \t#"
-		: "=m" (c[i])      // %0
-		: "m"  (a[i]),     // %1 
-		  "m"  (b[i])      // %2
-		);
-	}
-	
-	for(i = length; i < size; i++)
-		c[i] = a[i] * b[i];
-}
-
-/**
- * Calculate the mul of two arrays of float.
- * Algorithm uses SSE2 instructions.
- *
- * Expression:
- \verbatim
-  c[i] = a[i] * b[i]
- \endverbatim
- *
- * @param[in]	a array with elements to mul
- * @param[in]	b array with elements to mul
- * @param[in]	size size of the arrays
- * @param[out]	c array with the result of the sum	
- *
- */
-void mularray_float_unaligned_sse2(float *a, float *b, float *c, int size)
-{
-	int i = 0, length = (size / 4) * 4;
-	
-	for (i = 0; i < length; i += 4)
-	{
-		__asm__ volatile
-                ( // instruction             comment                  
-                "\n\t movdqu     %1,%%xmm0         \t#"
-                "\n\t movdqa     %2,%%xmm1         \t#"
-                "\n\t mulps      %%xmm0,%%xmm1     \t#"
-                "\n\t movdqa     %%xmm1,%0         \t#"
-		: "=m" (c[i])      // %0
-		: "m"  (a[i]),     // %1 
-		  "m"  (b[i])      // %2
-		);
-	}
-	
-	for(i = length; i < size; i++)
-		c[i] = a[i] * b[i];
-}
-
-/**
- * Calculate the mul of two arrays of floats.
- * Algorithm uses SSE2 instructions.
- *
- * Expression:
- \verbatim
-  c[i] = a[i] * b[i]
- \endverbatim
- *
- * @param[in]	a array with elements to mul
- * @param[in]	b array with elements to mul
- * @param[in]	size size of the arrays
- * @param[out]	c array with the result of the sum	
- *
- */
-void mularray_float_unrolled_unaligned_sse2(float *a, float *b, float *c, int size)
-{
-	int i = 0,
-	length = (size/4)*4,
-	length2 = (size/8)*8,
-	length4 = (size/16)*16;
-
-	for(i = 0; i < length4; i+=16)
-	{
-		__asm__ volatile
-                ( // instruction             comment
-                "\n\t movdqu     %4,%%xmm0         \t#"
-		"\n\t movdqa     %5,%%xmm1         \t#"
-		"\n\t movdqu     %6,%%xmm2        \t#"
-		"\n\t movdqa     %7,%%xmm3        \t#"
-		"\n\t movdqu     %8,%%xmm4        \t#"
-		"\n\t movdqa     %9,%%xmm5        \t#"
-		"\n\t movdqu     %10,%%xmm6        \t#"
-		"\n\t movdqa     %11,%%xmm7        \t#"
-		"\n\t mulps      %%xmm0,%%xmm1     \t#"
-		"\n\t mulps      %%xmm2,%%xmm3     \t#"
-		"\n\t mulps      %%xmm4,%%xmm5     \t#"
-		"\n\t mulps      %%xmm6,%%xmm7     \t#"
-                "\n\t movdqa     %%xmm1,%0         \t#"
-		"\n\t movdqa     %%xmm3,%1         \t#"
-		"\n\t movdqa     %%xmm5,%2         \t#"
-		"\n\t movdqa     %%xmm7,%3         \t#"
-		: "=m" (c[i]),     // %0
-		  "=m" (c[i+4]),   // %1
-		  "=m" (c[i+8]),   // %2
-		  "=m" (c[i+12])   // %3
-		: "m"  (a[i]),     // %4
-		  "m"  (b[i]),     // %5
-		  "m"  (a[i+4]),   // %6
-		  "m"  (b[i+4]),   // %7
-		  "m"  (a[i+8]),   // %8
-		  "m"  (b[i+8]),   // %9
-		  "m"  (a[i+12]),  // %10
-		  "m"  (b[i+12])   // %11
-		);
-	}
-
-	for(i = length4; i < length2; i+=8)
-	{
-		__asm__ volatile
-                ( // instruction             comment
-                "\n\t movdqu     %2,%%xmm0         \t#"
-		"\n\t movdqa     %3,%%xmm1         \t#"
-		"\n\t movdqu     %4,%%xmm2         \t#"
-		"\n\t movdqa     %5,%%xmm3         \t#"
-		"\n\t mulps      %%xmm0,%%xmm1     \t#"
-		"\n\t mulps      %%xmm2,%%xmm3     \t#"
-	        "\n\t movdqa     %%xmm1,%0         \t#"
-		"\n\t movdqa     %%xmm3,%1         \t#"
-		: "=m" (c[i]),     // %0
-		  "=m" (c[i+4])    // %1
-		: "m"  (a[i]),     // %2
-		  "m"  (b[i]),     // %3
-		  "m"  (a[i+4]),   // %4
-		  "m"  (b[i+4])    // %5
-		);
-	}
-		
-	for (i = length2; i < length; i += 4)
-	{
-		__asm__ volatile
-                ( // instruction             comment                  
-                "\n\t movdqu     %1,%%xmm0         \t#"
                 "\n\t movdqa     %2,%%xmm1         \t#"
                 "\n\t mulps      %%xmm0,%%xmm1     \t#"
                 "\n\t movdqa     %%xmm1,%0         \t#"
@@ -2496,7 +2119,7 @@ void mularray_double_unrolled_sse2(double *a, double *b, double *c, int size)
 
 	for(i = length4; i < length2; i+=4)
 	{
-		__asm__ volatile
+		/*__asm__ volatile
                 ( // instruction             comment
                 "\n\t movdqa     %2,%%xmm0         \t#"
 		"\n\t movdqa     %3,%%xmm1         \t#"
@@ -2512,7 +2135,24 @@ void mularray_double_unrolled_sse2(double *a, double *b, double *c, int size)
 		  "m"  (b[i]),     // %3
 		  "m"  (a[i+2]),   // %4
 		  "m"  (b[i+2])    // %5
+		);*/
+
+		__asm__ volatile
+                ( // instruction             comment
+                "\n\t movdqa     0x00(%1),%%xmm0         \t#"
+		"\n\t movdqa     0x00(%2),%%xmm1         \t#"
+		"\n\t movdqa     0x10(%1),%%xmm2         \t#"
+		"\n\t movdqa     0x10(%2),%%xmm3         \t#"
+		"\n\t mulpd      %%xmm0,%%xmm1           \t#"
+		"\n\t mulpd      %%xmm2,%%xmm3           \t#"
+	        "\n\t movdqa     %%xmm1,0x00(%0)         \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0)         \t#"
+		: : "r" (c+i),      // %0
+		 "r"  (a+i),     // %1
+		  "r"  (b+i)      // %3
 		);
+
+
 	}
 		
 	for (i = length2; i < length; i += 2)
@@ -2635,7 +2275,7 @@ void mularray_double_unrolled_unaligned_sse2(double *a, double *b, double *c, in
 
 	for(i = length4; i < length2; i+=4)
 	{
-		__asm__ volatile
+		/*__asm__ volatile
                 ( // instruction             comment
                 "\n\t movdqu     %2,%%xmm0         \t#"
 		"\n\t movdqa     %3,%%xmm1         \t#"
@@ -2651,6 +2291,21 @@ void mularray_double_unrolled_unaligned_sse2(double *a, double *b, double *c, in
 		  "m"  (b[i]),     // %3
 		  "m"  (a[i+2]),   // %4
 		  "m"  (b[i+2])    // %5
+		);*/
+
+		__asm__ volatile
+                ( // instruction             comment
+                "\n\t movdqu     0x00(%1),%%xmm0         \t#"
+		"\n\t movdqa     0x00(%2),%%xmm1         \t#"
+		"\n\t movdqu     0x10(%1),%%xmm2         \t#"
+		"\n\t movdqa     0x10(%2),%%xmm3         \t#"
+		"\n\t mulpd      %%xmm0,%%xmm1           \t#"
+		"\n\t mulpd      %%xmm2,%%xmm3           \t#"
+	        "\n\t movdqa     %%xmm1,0x00(%0)         \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0)         \t#"
+		: : "r" (c+i) ,     // %0
+		 "r"  (a+i),     // %1
+		  "r"  (b+i)      // %3
 		);
 	}
 		
@@ -3099,7 +2754,7 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 			b1 = &(b[j+1][i]);
 			b2 = &(b[j+2][i]);
 			b3 = &(b[j+3][i]);
-
+			
 			__asm__ volatile
 			( // instruction             comment
 			"\n\t movdqa	%4,%%xmm0	\t#"
@@ -3130,15 +2785,10 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
 			"\n\t movdqa     %%xmm0,%2	\t#"
 			"\n\t movdqa     %%xmm4,%3	\t#"
-			: "=m" (*b0),    // %0
-			  "=m" (*b1),    // %1
-			  "=m" (*b2),    // %2
-			  "=m" (*b3)     // %3
-			: "m"  (*a0),    // %4
-			  "m"  (*a1),    // %5
-			  "m"  (*a2),    // %6
-			  "m"  (*a3)     // %7
-			);
+			: 
+			: "r"  (a),    // %0
+			  "r"  (b)     // %1
+			 );
 		}
 	}
 
@@ -4996,7 +4646,7 @@ void memcpy_unrolled_sse2(void *dst, void *src, int size)
 
 	for(i = 0; i < length8; i+=128)
 	{
-		__asm__ volatile
+		/*__asm__ volatile
                 ( // instruction             comment
                 "\n\t movdqa     %8,%%xmm0         \t#"
 		"\n\t movdqa     %9,%%xmm1         \t#"
@@ -5030,6 +4680,42 @@ void memcpy_unrolled_sse2(void *dst, void *src, int size)
 		  "m"  (a[i+80]),  // %13
 		  "m"  (a[i+96]),  // %14
 		  "m"  (a[i+112])  // %15
+		);*/
+
+		__asm__ volatile
+                ( // instruction             comment
+                "\n\t movdqa     %8,%%xmm0         \t#"
+		"\n\t movdqa     %9,%%xmm1         \t#"
+		"\n\t movdqa     %10,%%xmm2        \t#"
+		"\n\t movdqa     %11,%%xmm3        \t#"
+		"\n\t movdqa     %12,%%xmm4        \t#"
+		"\n\t movdqa     %13,%%xmm5        \t#"
+		"\n\t movdqa     %14,%%xmm6        \t#"
+		"\n\t movdqa     %15,%%xmm7        \t#"
+                "\n\t movdqa     %%xmm0,%0         \t#"
+		"\n\t movdqa     %%xmm1,%1         \t#"
+		"\n\t movdqa     %%xmm2,%2         \t#"
+		"\n\t movdqa     %%xmm3,%3         \t#"
+		"\n\t movdqa     %%xmm4,%4         \t#"
+		"\n\t movdqa     %%xmm5,%5         \t#"
+		"\n\t movdqa     %%xmm6,%6         \t#"
+		"\n\t movdqa     %%xmm7,%7         \t#"
+		: "=m" (*(b+i)),     // %0
+		  "=m" (*(b+i+16)),  // %1
+		  "=m" (*(b+i+32)),  // %2
+		  "=m" (*(b+i+48)),  // %3
+		  "=m" (*(b+i+64)),  // %4
+		  "=m" (*(b+i+80)),  // %5
+		  "=m" (*(b+i+96)),  // %6
+		  "=m" (*(b+i+112))  // %7
+		: "m"  (*(a+i)),     // %8
+		  "m"  (*(a+i+16)),  // %9
+		  "m"  (*(a+i+32)),  // %10
+		  "m"  (*(a+i+48)),  // %11
+		  "m"  (*(a+i+64)),  // %12
+		  "m"  (*(a+i+80)),  // %13
+		  "m"  (*(a+i+96)),  // %14
+		  "m"  (*(a+i+112))  // %15
 		);
 	}
 
@@ -5169,12 +4855,12 @@ void convolution_linear_float_sse2(float *a, float *b, float *c, int size_a, int
 		{	
 			pointer = (long) &a[i - (size_b/2)];
 			
-			if(pointer % 16 == 0)
+			/*if(pointer % 16 == 0)
 				mularray_float_sse2(&a[i - (size_b/2)], b, aux, size_b);
 			else
 				mularray_float_unaligned_sse2(&a[i - (size_b/2)], b, aux, size_b);
 
-			c[i] = sumelem_float_sse2(aux, size_b);
+			c[i] = sumelem_float_sse2(aux, size_b);*/
 		}
 		else
 		{
@@ -5263,14 +4949,14 @@ void convolution_linear_double_sse2(double *a, double *b, double *c, int size_a,
 	{
 		if((i >= size_b / 2) && (i < (size_a -(size_b / 2))))
 		{
-			pointer = (long) &a[i - (size_b/2)];
+			/*pointer = (long) &a[i - (size_b/2)];
 			
 			if(pointer % 16 == 0)
 				mularray_double_sse2(&a[i - (size_b/2)], b, aux, size_b);
 			else
 				mularray_double_unaligned_sse2(&a[i - (size_b/2)], b, aux, size_b);
 
-			c[i] = sumelem_double_sse2(aux, size_b);
+			c[i] = sumelem_double_sse2(aux, size_b);*/
 		}
 		else
 		{
@@ -5560,7 +5246,7 @@ void convolution_matrix_float_sse2(float **a, float **b, float **c, int rows_a, 
 
 				for(int tt = 0; tt < rows_b; tt++)
 				{
-					mularray_float_unaligned_sse2(&a[i+tt-rows_b/2][j-cols_b/2], b[tt], tmp, cols_b);
+					//mularray_float_unaligned_sse2(&a[i+tt-rows_b/2][j-cols_b/2], b[tt], tmp, cols_b);
 					acc += sumelem_float_sse2(tmp, cols_b);
 				}
 
@@ -5661,12 +5347,12 @@ void convolution_matrix_double_sse2(double **a, double **b, double **c, int rows
 				{
 					pointer = (long) &a[i+tt-rows_b/2][j-cols_b/2];
 					
-					if(pointer % 16 == 0)
+					/*if(pointer % 16 == 0)
 						mularray_double_sse2(&a[i+tt-rows_b/2][j-cols_b/2], b[tt], tmp, cols_b);
 					else
 						mularray_double_unaligned_sse2(&a[i+tt-rows_b/2][j-cols_b/2], b[tt], tmp, cols_b);
 
-					acc += sumelem_double_sse2(tmp, cols_b);
+					acc += sumelem_double_sse2(tmp, cols_b);*/
 				}
 
 				c[i][j] = acc;

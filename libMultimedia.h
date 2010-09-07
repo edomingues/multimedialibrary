@@ -26,17 +26,14 @@ char sumelem_char_unrolled_sse2(char *a, int size);
 int sumelem_int(int *a, int size);
 int sumelem_int_sse2(int *a, int size);
 int sumelem_int_unrolled_sse2(int *a, int size);
-int sumelem_int_sse3(int *a, int size);
 
 float sumelem_float(float *a, int size);
 float sumelem_float_sse2(float *a, int size);
 float sumelem_float_unrolled_sse2(float *a, int size);
-float sumelem_float_sse3(float *a, int size);
 
 double sumelem_double(double *a, int size);
 double sumelem_double_sse2(double *a, int size);
 double sumelem_double_unrolled_sse2(double *a, int size);
-double sumelem_double_sse3(double *a, int size);
 
 void sumarray_char(char *a, char *b, char *c, int size);
 void sumarray_char_sse2(char *a, char *b, char *c, int size);

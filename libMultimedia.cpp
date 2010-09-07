@@ -2754,41 +2754,60 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 			b1 = &(b[j+1][i]);
 			b2 = &(b[j+2][i]);
 			b3 = &(b[j+3][i]);
+
+			__asm__ volatile
+			( // instruction             comment
+			"\n\t movdqa	0x00(%0),%%xmm0	\t#"
+			"\n\t movdqa	0x00(%1),%%xmm1	\t#"
+			"\n\t movdqa	0x00(%2),%%xmm2	\t#"
+			"\n\t movdqa	0x00(%3),%%xmm3	\t#"
+			"\n\t movdqa	0x00(%0),%%xmm4	\t#"
+			"\n\t movdqa	0x00(%1),%%xmm5	\t#"
+			"\n\t movdqa	0x00(%2),%%xmm6	\t#"
+			"\n\t movdqa	0x00(%3),%%xmm7	\t#"
+			:
+			: "r"  (a0),    // %0
+			  "r"  (a1),    // %1
+			  "r"  (a2),    // %2
+			  "r"  (a3)     // %3
+			);
+
 			
 			__asm__ volatile
 			( // instruction             comment
-			"\n\t movdqa	%4,%%xmm0	\t#"
-			"\n\t movdqa	%5,%%xmm1	\t#"
-			"\n\t movdqa	%6,%%xmm2	\t#"
-			"\n\t movdqa	%7,%%xmm3	\t#"
-			"\n\t movdqa	%4,%%xmm4	\t#"
-			"\n\t movdqa	%5,%%xmm5	\t#"
-			"\n\t movdqa	%6,%%xmm6	\t#"
-			"\n\t movdqa	%7,%%xmm7	\t#"
 			"\n\t unpcklps  %%xmm2,%%xmm0	\t#"
 			"\n\t unpcklps	%%xmm3,%%xmm1	\t#"	
 			"\n\t unpcklps  %%xmm6,%%xmm4	\t#"
 			"\n\t unpcklps	%%xmm7,%%xmm5	\t#"
 			"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
 			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
-			"\n\t movdqa    %%xmm0,%0	\t#"
-			"\n\t movdqa    %%xmm4,%1	\t#"
-			"\n\t movdqa	%4,%%xmm0	\t#"
-			"\n\t movdqa	%5,%%xmm1	\t#"
-			"\n\t movdqa	%4,%%xmm4	\t#"
-			"\n\t movdqa	%5,%%xmm5	\t#"
+			"\n\t movdqa    %%xmm0,0x00(%0)	\t#"
+			"\n\t movdqa    %%xmm4,0x00(%1)	\t#"
+			"\n\t movdqa	0x00(%2),%%xmm0	\t#"
+			"\n\t movdqa	0x00(%3),%%xmm1	\t#"
+			"\n\t movdqa	0x00(%2),%%xmm4	\t#"
+			"\n\t movdqa	0x00(%3),%%xmm5	\t#"
 			"\n\t unpckhps  %%xmm2,%%xmm0	\t#"
 			"\n\t unpckhps	%%xmm3,%%xmm1	\t#"
 			"\n\t unpckhps  %%xmm6,%%xmm4	\t#"
 			"\n\t unpckhps	%%xmm7,%%xmm5	\t#"
 			"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
 			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
-			"\n\t movdqa     %%xmm0,%2	\t#"
-			"\n\t movdqa     %%xmm4,%3	\t#"
 			: 
-			: "r"  (a),    // %0
-			  "r"  (b)     // %1
-			 );
+			: "r"  (b0),    // %0
+			  "r"  (b1),    // %1
+			  "r"  (a0),    // %2
+			  "r"  (a1)     // %3
+			);
+
+			__asm__ volatile
+			( // instruction             comment
+			"\n\t movdqa     %%xmm0,0x00(%0)	\t#"
+			"\n\t movdqa     %%xmm4,0x00(%1)	\t#"
+			: 
+			: "r" (b2),    // %0
+			  "r" (b3)     // %1
+			);	
 		}
 	}
 
@@ -2800,77 +2819,6 @@ void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
 		for(j = 0; j < lengthCols; j++)
 			b[j][i] = a[i][j];
 }
-
-
-/*
-void transpose_matrix_float_sse2(float **a, float **b, int rows, int cols)
-{
-	int i = 0, j = 0, lengthRows = (rows / 4) * 4, lengthCols = (cols / 4) * 4;	
-	
-	for(j = 0; j < lengthCols; j += 4)
-	{
-		for(i = 0; i < lengthRows; i += 4)
-		{
-                        float *a0=&(a[i][j]), *a1=&(a[i+1][j]), *a2=&(a[i+2][j]), *a3=&(a[i+3][j]);
-
-			__asm__ volatile
-			( // instruction             comment
-			"\n\t movdqa	%2,%%xmm0	\t#"
-			"\n\t movdqa	%3,%%xmm1	\t#"
-			"\n\t movdqa	%4,%%xmm2	\t#"
-			"\n\t movdqa	%5,%%xmm3	\t#"
-			"\n\t movdqa	%2,%%xmm4	\t#"
-			"\n\t movdqa	%3,%%xmm5	\t#"
-			"\n\t movdqa	%4,%%xmm6	\t#"
-			"\n\t movdqa	%5,%%xmm7	\t#"
-			"\n\t unpcklps  %%xmm2,%%xmm0	\t#"
-			"\n\t unpcklps	%%xmm3,%%xmm1	\t#"	
-			"\n\t unpcklps  %%xmm6,%%xmm4	\t#"
-			"\n\t unpcklps	%%xmm7,%%xmm5	\t#"
-			"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
-			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
-			"\n\t movdqa    %%xmm0,%0	\t#"
-			"\n\t movdqa    %%xmm4,%1	\t#"
-			"\n\t movdqa	%2,%%xmm0	\t#"
-			"\n\t movdqa	%3,%%xmm1	\t#"
-			"\n\t movdqa	%2,%%xmm4	\t#"
-			"\n\t movdqa	%3,%%xmm5	\t#"
-			"\n\t unpckhps  %%xmm2,%%xmm0	\t#"
-			"\n\t unpckhps	%%xmm3,%%xmm1	\t#"
-			"\n\t unpckhps  %%xmm6,%%xmm4	\t#"
-			"\n\t unpckhps	%%xmm7,%%xmm5	\t#"
-			"\n\t unpcklps	%%xmm1,%%xmm0	\t#"
-			"\n\t unpckhps	%%xmm5,%%xmm4	\t#"
-			: "=m" (b[j][i]),      // %0
-			  "=m" (b[j+1][i])    // %1
-			: "m"  (a0),      // %2
-			  "m"  (a1),    // %3
-			  "m"  (a2),    // %4
-			  "m"  (a3)     // %5
-			);
-
-
-			__asm__ volatile
-			( // instruction             comment
-			"\n\t movdqa     %%xmm0,%0	\t#"
-			"\n\t movdqa     %%xmm4,%1	\t#"
-			: "=m" (b[j+2][i]),    // %0
-			  "=m" (b[j+3][i])     // %1
-                        :
-			);
-
-		}
-	}
-
-	for(i = 0; i < rows; i++)
-		for(j = lengthCols; j < cols; j++)
-			b[j][i] = a[i][j];
-
-	for(i = lengthRows; i < rows; i++)
-		for(j = 0; j < lengthCols; j++)
-			b[j][i] = a[i][j];
-}
-*/
 
 /**
  * Calculates the transpose of matrix A and store it in matrix B.
@@ -2921,26 +2869,33 @@ void transpose_matrix_double(double **a, double **b, int rows, int cols)
  */
 void transpose_matrix_double_sse2(double **a, double **b, int rows, int cols)
 {
-	int i = 0, j = 0, lengthRows = (rows / 2) * 2, lengthCols = (cols / 2) * 2;	
+	int i = 0, j = 0, lengthRows = (rows / 2) * 2, lengthCols = (cols / 2) * 2;
+	double *a0 = NULL, *a1 = NULL, *b0 = NULL, *b1 = NULL;	
 	
 	for(j = 0; j < lengthCols; j += 2)
 	{
 		for(i = 0; i < lengthRows; i += 2)
 		{
+			a0 = &(a[i][j]);
+			a1 = &(a[i+1][j]);
+			b0 = &(b[j][i]);
+			b1 = &(b[j+1][i]);
+
 			__asm__ volatile
 			( // instruction             comment
-               		"\n\t movdqa	%2,%%xmm0	\t#"
-                	"\n\t movdqa	%3,%%xmm1	\t#"
-			"\n\t movdqa	%2,%%xmm2	\t#"
-                	"\n\t movdqa	%3,%%xmm3	\t#"
+               		"\n\t movdqa	0x00(%2),%%xmm0	\t#"
+                	"\n\t movdqa	0x00(%3),%%xmm1	\t#"
+			"\n\t movdqa	0x00(%2),%%xmm2	\t#"
+                	"\n\t movdqa	0x00(%3),%%xmm3	\t#"
                 	"\n\t unpcklpd  %%xmm1,%%xmm0	\t#"
 			"\n\t unpckhpd  %%xmm3,%%xmm2	\t#"
-                	"\n\t movdqa     %%xmm0,%0	\t#"
-			"\n\t movdqa     %%xmm2,%1	\t#"
-			: "=m" (b[j][i]),    // %0
-			  "=m" (b[j+1][i])   // %1
-			: "m"  (a[i][j]),    // %2
-			  "m"  (a[i+1][j])   // %3
+                	"\n\t movdqa    %%xmm0,0x00(%0)	\t#"
+			"\n\t movdqa    %%xmm2,0x00(%1)	\t#"
+			:
+			: "r" (b0),     // %0
+			  "r" (b1),     // %1
+			  "r" (a0),     // %2
+			  "r" (a1)      // %3
 			);
 		}
 	}

@@ -7,11 +7,11 @@
 
 #define SIZE 10000
 #define SIZE2 100
-#define COLS 1000
-#define ROWS 1000
+#define COLS 500
+#define ROWS 500
 #define COLS2 10
 #define ROWS2 10
-#define REPEAT 1000
+#define REPEAT 10
 
 using namespace std;
 
@@ -1909,14 +1909,14 @@ int main (void)
 {	
 	srandom(time(NULL));
 
-	testSumelem();
+	//testSumelem();
 	//testSumarray();
 	//testMularray();
 	//testDotProduct();
 	//testSummatrix();
 	//testSumLinearMatrix();
 	//testTransposeMatrix();
-	//testMulmatrix();
+	testMulmatrix();
 	//testMax();
 	//testMin();
 	//testMemCpy();

@@ -7,8 +7,8 @@
 
 #define SIZE 100000
 #define SIZE2 100
-#define COLS 500
-#define ROWS 500
+#define COLS 600
+#define ROWS 600
 #define COLS2 10
 #define ROWS2 10
 #define REPEAT 100
@@ -1905,13 +1905,13 @@ int main (void)
 	srandom(time(NULL));
 
 	//testSumelem();
-	testSumarray();
+	//testSumarray();
 	//testMularray();
 	//testDotProduct();
 	//testSummatrix();
 	//testSumLinearMatrix();
 	//testTransposeMatrix();
-	//testMulmatrix();
+	testMulmatrix();
 	//testMax();
 	//testMin();
 	//testMemCpy();

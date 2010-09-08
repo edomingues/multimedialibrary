@@ -62,7 +62,7 @@ char sumelem_char_sse2(char *a, int size)
 	char rv = 0;
 	
 	__asm__ volatile
-        ("movdqa 0x00(%0),%%xmm0" : :"r" (b));
+        ("pxor %%xmm0, %%xmm0": :);
 
 	for (i = 0; i < length; i += 16)
 	{
@@ -106,8 +106,8 @@ char sumelem_char_unrolled_sse2(char *a, int size)
 	char rv = 0;
 
 	__asm__ volatile
-        ("\n\tmovdqa 0x00(%0),%%xmm0\t#"
-	 "\n\tmovdqa 0x00(%0),%%xmm1\t#" : :"r" (b));
+	("\n\t pxor %%xmm0, %%xmm0 \t"
+	 "\n\t pxor %%xmm1, %%xmm1 \t": :);
 
 	for (; i < length6; i += 96)
 	{
@@ -204,7 +204,7 @@ int sumelem_int_sse2(int *a, int size)
 	int i = 0, length = (size / 4) * 4, rv = 0;
 
 	__asm__ volatile
-        ("movdqa 0x00(%0),%%xmm0" : :"r" (b));
+        ("pxor %%xmm0, %%xmm0": :);
 		
 	for (i = 0; i < length; i += 4)
 	{
@@ -248,9 +248,8 @@ int sumelem_int_unrolled_sse2(int *a, int size)
 	int rv = 0;
 
 	__asm__ volatile
-        ("\n\tmovdqa 0x00(%0),%%xmm0 \t#"
-	 "\n\tmovdqa 0x00(%0),%%xmm1 \t#"
-	 : :"r" (b));
+	("\n\t pxor %%xmm0, %%xmm0 \t"
+	 "\n\t pxor %%xmm1, %%xmm1 \t": :);
 
 	for (; i < length6; i += 24)
 	{
@@ -354,7 +353,7 @@ float sumelem_float_sse2(float *a, int size)
 	float rv = 0;
 	
 	__asm__ volatile
-        ("movdqa 0x00(%0),%%xmm0": :"r" (b));
+        ("pxor %%xmm0, %%xmm0": :);
 
 	for (i = 0; i < length; i += 4)
 	{
@@ -398,8 +397,8 @@ float sumelem_float_unrolled_sse2(float *a, int size)
 	float rv = 0.0;
 
 	__asm__ volatile
-        ("\n\tmovdqa 0x00(%0),%%xmm0\t#"
-	 "\n\tmovdqa 0x00(%0),%%xmm1\t#" : :"r" (b));
+	("\n\t pxor %%xmm0, %%xmm0 \t"
+	 "\n\t pxor %%xmm1, %%xmm1 \t": :);
 
 	for (; i < length6; i += 24)
 	{
@@ -498,12 +497,12 @@ double sumelem_double(double *a, int size)
  */
 double sumelem_double_sse2(double *a, int size)
 {
-	double __attribute__ ((aligned(16))) b[2] = {0.0, 0.0,};
+	double __attribute__ ((aligned(16))) b[2] = {0.0, 0.0};
 	int i = 0, length = (size / 2) * 2;
 	double rv = 0;
 	
 	__asm__ volatile
-        ("movdqa 0x00(%0),%%xmm0" : :"r" (b));
+        ("pxor %%xmm0, %%xmm0": :);
 
 	for (i = 0; i < length; i += 2)
 	{
@@ -547,8 +546,8 @@ double sumelem_double_unrolled_sse2(double *a, int size)
 	double rv = 0.0;
 
 	__asm__ volatile
-        ("\n\tmovdqa 0x00(%0),%%xmm0\t#"
-	 "\n\tmovdqa 0x00(%0),%%xmm1\t#" : :"r" (b));
+	("\n\t pxor %%xmm0, %%xmm0 \t"
+	 "\n\t pxor %%xmm1, %%xmm1 \t": :);
 
 	for (; i < length6; i += 12)
 	{

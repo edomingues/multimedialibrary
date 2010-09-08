@@ -354,16 +354,16 @@ float sumelem_float_sse2(float *a, int size)
 	float rv = 0;
 	
 	__asm__ volatile
-        ("movdqa     %0,%%xmm0" : :"m" (b[0]));
+        ("movdqa 0x00(%0),%%xmm0": :"r" (b));
 
 	for (i = 0; i < length; i += 4)
 	{
 		__asm__ volatile
-                ("addps %0,%%xmm0": : "m" (a[i]));
+                ("addps 0x00(%0),%%xmm0": :"r" (a+i));
 	}
 
 	__asm__ volatile
-        ("movdqa %%xmm0,%0 " :"=m" (b[0]):);
+        ("movdqa %%xmm0,0x00(%0)": :"r" (b));
 	
 	rv = b[0] + b[1] + b[2] + b[3];
 	
@@ -398,69 +398,52 @@ float sumelem_float_unrolled_sse2(float *a, int size)
 	float rv = 0.0;
 
 	__asm__ volatile
-        ("\n\tmovdqa %0,%%xmm0\t#"
-	 "\n\tmovdqa %0,%%xmm1\t#" : :"m" (b[0]));
-
-	float *paux=a;
+        ("\n\tmovdqa 0x00(%0),%%xmm0\t#"
+	 "\n\tmovdqa 0x00(%0),%%xmm1\t#" : :"r" (b));
 
 	for (; i < length6; i += 24)
 	{
 		__asm__ volatile
-		(// instruction		 comment
-		 "\n\t movdqa %0,%%xmm2    \t#"
-		 "\n\t movdqa %1,%%xmm3    \t#"
-		 "\n\t movdqa %2,%%xmm4    \t#"
-		 "\n\t movdqa %3,%%xmm5    \t#"
-		 "\n\t movdqa %4,%%xmm6    \t#"
-		 "\n\t movdqa %5,%%xmm7    \t#"
-		 "\n\t addps %%xmm2,%%xmm0 \t#"
-		 "\n\t addps %%xmm5,%%xmm1 \t#"
-		 "\n\t addps %%xmm3,%%xmm0 \t#"
-		 "\n\t addps %%xmm6,%%xmm1 \t#"
-		 "\n\t addps %%xmm4,%%xmm0 \t#"
-		 "\n\t addps %%xmm7,%%xmm1 \t#"
-		 :
-		 :"m"  (*(paux)),       // %0
-		  "m"  (*(paux+4)),     // %1
-		  "m"  (*(paux+8)),     // %2
-		  "m"  (*(paux+12)),    // %3
-		  "m"  (*(paux+16)),    // %4
-		  "m"  (*(paux+20))     // %5
+		(// instruction		      comment
+		 "\n\t movdqa 0x00(%0),%%xmm2 \t#"
+		 "\n\t movdqa 0x10(%0),%%xmm3 \t#"
+		 "\n\t movdqa 0x20(%0),%%xmm4 \t#"
+		 "\n\t movdqa 0x30(%0),%%xmm5 \t#"
+		 "\n\t movdqa 0x40(%0),%%xmm6 \t#"
+		 "\n\t movdqa 0x50(%0),%%xmm7 \t#"
+		 "\n\t addps %%xmm2,%%xmm0    \t#"
+		 "\n\t addps %%xmm5,%%xmm1    \t#"
+		 "\n\t addps %%xmm3,%%xmm0    \t#"
+		 "\n\t addps %%xmm6,%%xmm1    \t#"
+		 "\n\t addps %%xmm4,%%xmm0    \t#"
+		 "\n\t addps %%xmm7,%%xmm1    \t#"
+		 : :"r"  (a+i)       // %0
 		);
-
-		paux = paux + 24;
 	}
 
 	for (; i < length3; i += 12)
 	{
 		__asm__ volatile
-		(// instruction             comment
-		 "\n\t movdqa %0,%%xmm2    \t#"
-		 "\n\t movdqa %1,%%xmm3    \t#"
-		 "\n\t movdqa %2,%%xmm4    \t#"
-		 "\n\t addps %%xmm2,%%xmm0 \t#"
-		 "\n\t addps %%xmm4,%%xmm1 \t#"
-		 "\n\t addps %%xmm3,%%xmm0 \t#"
-		 :
-		 :"m"  (*(paux)),       // %0
-		  "m"  (*(paux+4)),     // %1
-		  "m"  (*(paux+8))      // %2
+		(// instruction               comment
+		 "\n\t movdqa 0x00(%0),%%xmm2 \t#"
+		 "\n\t movdqa 0x10(%0),%%xmm3 \t#"
+		 "\n\t movdqa 0x00(%0),%%xmm4 \t#"
+		 "\n\t addps %%xmm2,%%xmm0    \t#"
+		 "\n\t addps %%xmm4,%%xmm1    \t#"
+		 "\n\t addps %%xmm3,%%xmm0    \t#"
+		 : :"r" (a+i)       // %0
 		);
-
-		paux = paux +12;
 	}
 
 	for (; i < length; i += 4)
 	{
 		__asm__ volatile
-		("addps %0,%%xmm0" : :"m" (*paux));
-		
-		paux = paux + 4; 
+		("addps 0x00(%0),%%xmm0": :"r" (a+i));
 	}
 
 	__asm__ volatile
-        ("\n\t addps %%xmm1,%%xmm0 \t#"
-	 "\n\t movdqa %%xmm0,%0    \t#" :"=m" (b[0]): );
+        ("\n\t addps %%xmm1,%%xmm0    \t#"
+	 "\n\t movdqa %%xmm0,0x00(%0) \t#": :"r" (b));
 	
 	rv = b[0]+b[1]+b[2]+b[3];
 	
@@ -520,16 +503,16 @@ double sumelem_double_sse2(double *a, int size)
 	double rv = 0;
 	
 	__asm__ volatile
-        ("movdqa     %0,%%xmm0" : :"m" (b[0]));
+        ("movdqa 0x00(%0),%%xmm0" : :"r" (b));
 
 	for (i = 0; i < length; i += 2)
 	{
 		__asm__ volatile
-                ("addpd      %0,%%xmm0": :"m"  (a[i]));
+                ("addpd 0x00(%0),%%xmm0": :"r"  (a+i));
 	}
 
 	__asm__ volatile
-        ("movdqa %%xmm0,%0 " :"=m" (b[0]):);
+        ("movdqa %%xmm0,0x00(%0)": :"r" (b));
 	
 	rv = b[0] + b[1];
 	
@@ -564,61 +547,52 @@ double sumelem_double_unrolled_sse2(double *a, int size)
 	double rv = 0.0;
 
 	__asm__ volatile
-        ("\n\tmovdqa %0,%%xmm0\t#"
-	 "\n\tmovdqa %0,%%xmm1\t#" : :"m" (b[0]));
+        ("\n\tmovdqa 0x00(%0),%%xmm0\t#"
+	 "\n\tmovdqa 0x00(%0),%%xmm1\t#" : :"r" (b));
 
 	for (; i < length6; i += 12)
 	{
 		__asm__ volatile
-		(// instruction		 comment
-		 "\n\t movdqa %0,%%xmm2    \t#"
-		 "\n\t movdqa %1,%%xmm3    \t#"
-		 "\n\t movdqa %2,%%xmm4    \t#"
-		 "\n\t movdqa %3,%%xmm5    \t#"
-		 "\n\t movdqa %4,%%xmm6    \t#"
-		 "\n\t movdqa %5,%%xmm7    \t#"
-		 "\n\t addpd %%xmm2,%%xmm0 \t#"
-		 "\n\t addpd %%xmm5,%%xmm1 \t#"
-		 "\n\t addpd %%xmm3,%%xmm0 \t#"
-		 "\n\t addpd %%xmm6,%%xmm1 \t#"
-		 "\n\t addpd %%xmm4,%%xmm0 \t#"
-		 "\n\t addpd %%xmm7,%%xmm1 \t#"
-		 :
-		 :"m"  (a[i]),       // %0
-		  "m"  (a[i+2]),     // %1
-		  "m"  (a[i+4]),     // %2
-		  "m"  (a[i+6]),     // %3
-		  "m"  (a[i+8]),     // %4
-		  "m"  (a[i+10])     // %5
+		(// instruction		      comment
+		 "\n\t movdqa 0x00(%0),%%xmm2 \t#"
+		 "\n\t movdqa 0x10(%0),%%xmm3 \t#"
+		 "\n\t movdqa 0x20(%0),%%xmm4 \t#"
+		 "\n\t movdqa 0x30(%0),%%xmm5 \t#"
+		 "\n\t movdqa 0x40(%0),%%xmm6 \t#"
+		 "\n\t movdqa 0x50(%0),%%xmm7 \t#"
+		 "\n\t addpd %%xmm2,%%xmm0    \t#"
+		 "\n\t addpd %%xmm5,%%xmm1    \t#"
+		 "\n\t addpd %%xmm3,%%xmm0    \t#"
+		 "\n\t addpd %%xmm6,%%xmm1    \t#"
+		 "\n\t addpd %%xmm4,%%xmm0    \t#"
+		 "\n\t addpd %%xmm7,%%xmm1    \t#"
+		 : :"r" (a+i) // %0
 		);
 	}
 
 	for (; i < length3; i += 6)
 	{
 		__asm__ volatile
-		(// instruction             comment
-		 "\n\t movdqa %0,%%xmm2    \t#"
-		 "\n\t movdqa %1,%%xmm3    \t#"
-		 "\n\t movdqa %2,%%xmm4    \t#"
-		 "\n\t addpd %%xmm2,%%xmm0 \t#"
-		 "\n\t addpd %%xmm4,%%xmm1 \t#"
-		 "\n\t addpd %%xmm3,%%xmm0 \t#"
-		 :
-		 :"m"  (a[i]),       // %0
-		  "m"  (a[i+2]),     // %1
-		  "m"  (a[i+4])      // %2
+		(// instruction               comment
+		 "\n\t movdqa 0x00(%0),%%xmm2 \t#"
+		 "\n\t movdqa 0x00(%0),%%xmm3 \t#"
+		 "\n\t movdqa 0x00(%0),%%xmm4 \t#"
+		 "\n\t addpd %%xmm2,%%xmm0    \t#"
+		 "\n\t addpd %%xmm4,%%xmm1    \t#"
+		 "\n\t addpd %%xmm3,%%xmm0    \t#"
+		 : :"r"  (a+i) // %0
 		);
 	}
 
 	for (; i < length; i += 2)
 	{
 		__asm__ volatile
-                ("addpd %0,%%xmm0" : :"m" (a[i]));
+                ("addpd 0x00(%0),%%xmm0": :"r" (a+i));
 	}
 
 	__asm__ volatile
-        ("\n\t addpd %%xmm1,%%xmm0 \t#"
-	 "\n\t movdqa %%xmm0,%0    \t#" :"=m" (b[0]): );
+        ("\n\t addpd %%xmm1,%%xmm0    \t#"
+	 "\n\t movdqa %%xmm0,0x00(%0) \t#": :"r" (b));
 	
 	rv = b[0]+b[1];
 	
@@ -676,14 +650,14 @@ void sumarray_char_sse2(char *a, char *b, char *c, int size)
 	for (i = 0; i < length; i += 16)
 	{
 		__asm__ volatile
-                ( // instruction             comment                  
-                "\n\t movdqa     %1,%%xmm0         \t#"
-                "\n\t movdqa     %2,%%xmm1         \t#"
-                "\n\t paddb      %%xmm0,%%xmm1     \t#"
-                "\n\t movdqa     %%xmm1,%0         \t#"
-		: "=m" (c[i])      // %0
-		: "m"  (a[i]),     // %1 
-		  "m"  (b[i])      // %2
+                ( // instruction                  comment                  
+                "\n\t movdqa     0x00(%1),%%xmm0  \t#"
+                "\n\t movdqa     0x00(%2),%%xmm1  \t#"
+                "\n\t paddb      %%xmm0,%%xmm1    \t#"
+                "\n\t movdqa     %%xmm1,0x00(%0)  \t#"
+		: : "r" (c+i),  // %0
+		"r"  (a+i),     // %1 
+		"r"  (b+i)      // %2
 		);
 	}
 
@@ -716,70 +690,58 @@ void sumarray_char_unrolled_sse2(char *a, char *b, char *c, int size)
 	for(i = 0; i < length4; i+=64)
 	{
 		__asm__ volatile
-                ( // instruction             comment
-                "\n\t movdqa     %4,%%xmm0         \t#"
-		"\n\t movdqa     %5,%%xmm1         \t#"
-		"\n\t movdqa     %6,%%xmm2         \t#"
-		"\n\t movdqa     %7,%%xmm3         \t#"
-		"\n\t movdqa     %8,%%xmm4         \t#"
-		"\n\t movdqa     %9,%%xmm5         \t#"
-		"\n\t movdqa     %10,%%xmm6        \t#"
-		"\n\t movdqa     %11,%%xmm7        \t#"
+                ( // instruction                   comment
+                "\n\t movdqa     0x00(%1),%%xmm0   \t#"
+		"\n\t movdqa     0x00(%2),%%xmm1   \t#"
+		"\n\t movdqa     0x10(%1),%%xmm2   \t#"
+		"\n\t movdqa     0x10(%2),%%xmm3   \t#"
+		"\n\t movdqa     0x20(%1),%%xmm4   \t#"
+		"\n\t movdqa     0x20(%2),%%xmm5   \t#"
+		"\n\t movdqa     0x30(%1),%%xmm6   \t#"
+		"\n\t movdqa     0x30(%2),%%xmm7   \t#"
 		"\n\t paddb      %%xmm0,%%xmm1     \t#"
 		"\n\t paddb      %%xmm2,%%xmm3     \t#"
 		"\n\t paddb      %%xmm4,%%xmm5     \t#"
 		"\n\t paddb      %%xmm6,%%xmm7     \t#"
-	        "\n\t movdqa     %%xmm1,%0         \t#"
-		"\n\t movdqa     %%xmm3,%1         \t#"
-		"\n\t movdqa     %%xmm5,%2         \t#"
-		"\n\t movdqa     %%xmm7,%3         \t#"
-		: "=m" (c[i]),     // %0
-		  "=m" (c[i+16]),  // %1
-		  "=m" (c[i+32]),  // %2
-		  "=m" (c[i+48])   // %3
-		: "m"  (a[i]),     // %4
-		  "m"  (b[i]),     // %5
-		  "m"  (a[i+16]),  // %6
-		  "m"  (b[i+16]),  // %7
-		  "m"  (a[i+32]),  // %8
-		  "m"  (b[i+32]),  // %9
-		  "m"  (a[i+48]),  // %10
-		  "m"  (b[i+48])   // %11
+	        "\n\t movdqa     %%xmm1,0x00(%0)   \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0)   \t#"
+		"\n\t movdqa     %%xmm5,0x20(%0)   \t#"
+		"\n\t movdqa     %%xmm7,0x30(%0)   \t#"
+		: :"r" (c+i),  // %0
+		"r" (a+i),     // %1
+		"r" (b+i)      // %2
 		);
 	}
 	
 	for(; i < length2; i+=32)
 	{
 		__asm__ volatile
-                ( // instruction             comment
-                "\n\t movdqa     %2,%%xmm0         \t#"
-		"\n\t movdqa     %3,%%xmm1         \t#"
-		"\n\t movdqa     %4,%%xmm2         \t#"
-		"\n\t movdqa     %5,%%xmm3         \t#"
-		"\n\t paddb      %%xmm0,%%xmm1     \t#"
-		"\n\t paddb      %%xmm2,%%xmm3     \t#"
-	        "\n\t movdqa     %%xmm1,%0         \t#"
-		"\n\t movdqa     %%xmm3,%1         \t#"
-		: "=m" (c[i]),     // %0
-		  "=m" (c[i+16])   // %1
-		: "m"  (a[i]),     // %2
-		  "m"  (b[i]),     // %3
-		  "m"  (a[i+16]),  // %4
-		  "m"  (b[i+16])   // %5
+                ( // instruction                 comment
+                "\n\t movdqa     0x00(%1),%%xmm0 \t#"
+		"\n\t movdqa     0x00(%2),%%xmm1 \t#"
+		"\n\t movdqa     0x10(%1),%%xmm2 \t#"
+		"\n\t movdqa     0x10(%2),%%xmm3 \t#"
+		"\n\t paddb      %%xmm0,%%xmm1   \t#"
+		"\n\t paddb      %%xmm2,%%xmm3   \t#"
+	        "\n\t movdqa     %%xmm1,0x00(%0) \t#"
+		"\n\t movdqa     %%xmm3,0x10(%0) \t#"
+		: : "r" (c+i),  // %0
+		"r"  (a+i),     // %2
+		"r"  (b+i)      // %3
 		);
 	}
 
 	for(; i < length; i+=16)
 	{
 		__asm__ volatile
-                ( // instruction             comment
-                "\n\t movdqa     %1,%%xmm0         \t#"
-		"\n\t movdqa     %2,%%xmm1         \t#"
-		"\n\t paddb      %%xmm0,%%xmm1     \t#"
-	        "\n\t movdqa     %%xmm1,%0         \t#"
-		: "=m" (c[i])      // %0
-		: "m"  (a[i]),     // %1
-		  "m"  (b[i])      // %2
+                ( // instruction                  comment                  
+                "\n\t movdqa     0x00(%1),%%xmm0  \t#"
+                "\n\t movdqa     0x00(%2),%%xmm1  \t#"
+                "\n\t paddb      %%xmm0,%%xmm1    \t#"
+                "\n\t movdqa     %%xmm1,0x00(%0)  \t#"
+		: : "r" (c+i),  // %0
+		"r"  (a+i),     // %1 
+		"r"  (b+i)      // %2
 		);
 	}
 
@@ -832,14 +794,14 @@ void sumarray_int_sse2(int *a, int *b, int *c, int size)
 	for (i = 0; i < (size/4)*4; i += 4)
 	{
 		__asm__ volatile
-                ( // instruction             comment                  
-                "\n\t movdqa     %1,%%xmm0         \t#"
-                "\n\t movdqa     %2,%%xmm1         \t#"
-                "\n\t paddd      %%xmm0,%%xmm1     \t#"
-                "\n\t movdqa     %%xmm1,%0         \t#"
-		: "=m" (c[i])      // %0
-		: "m"  (a[i]),     // %1 
-		  "m"  (b[i])      // %2
+                ( // instruction                 comment                  
+                "\n\t movdqa     0x00(%1),%%xmm0 \t#"
+                "\n\t movdqa     0x00(%2),%%xmm1 \t#"
+                "\n\t paddd      %%xmm0,%%xmm1   \t#"
+                "\n\t movdqa     %%xmm1,0x00(%0) \t#"
+		: : "r" (c+i),  // %0
+		"r"  (a+i),     // %1 
+		"r"  (b+i)      // %2
 		);
 	}
 
@@ -906,24 +868,6 @@ void sumarray_int_unrolled_sse2(int *a, int *b, int *c, int size)
 	
 	for(; i < length2; i+=8)
 	{
-		/*__asm__ volatile
-                ( // instruction             comment
-                "\n\t movdqa     %2,%%xmm0         \t#"
-		"\n\t movdqa     %3,%%xmm1         \t#"
-		"\n\t movdqa     %4,%%xmm2         \t#"
-		"\n\t movdqa     %5,%%xmm3         \t#"
-		"\n\t paddd      %%xmm0,%%xmm1     \t#"
-		"\n\t paddd      %%xmm2,%%xmm3     \t#"
-	        "\n\t movdqa     %%xmm1,0x00(%0)         \t#"
-		"\n\t movdqa     %%xmm3,0x10(%0)         \t#"
-		: "=m" (c[i]),     // %0
-		  "=m" (c[i+4])    // %1
-		: "m"  (a[i]),     // %2
-		  "m"  (b[i]),     // %3
-		  "m"  (a[i+4]),   // %4
-		  "m"  (b[i+4])    // %5
-		);*/
-
 		__asm__ volatile
                 ( // instruction             comment
                 "\n\t movdqa     0x00(%1),%%xmm0         \t#"

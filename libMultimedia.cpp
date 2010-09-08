@@ -62,16 +62,16 @@ char sumelem_char_sse2(char *a, int size)
 	char rv = 0;
 	
 	__asm__ volatile
-        ("movdqa %0,%%xmm0" : :"m" (b[0]));
+        ("movdqa 0x00(%0),%%xmm0" : :"r" (b));
 
 	for (i = 0; i < length; i += 16)
 	{
 		__asm__ volatile
-                ("paddb %0,%%xmm0": :"m" (a[i]));
+                ("paddb 0x00(%0),%%xmm0": :"r" (a+i));
 	}
 
 	__asm__ volatile
-        ("movdqa %%xmm0,%0 " :"=m" (b[0]):);
+        ("movdqa %%xmm0,0x00(%0) " : :"r" (b));
 	
 	rv = b[0]+b[1]+b[2]+b[3]+b[4]+b[5]+b[6]+b[7]+b[8]+b[9]+b[10]+b[11]+b[12]+b[13]+b[14]+b[15];
 	
@@ -106,8 +106,8 @@ char sumelem_char_unrolled_sse2(char *a, int size)
 	char rv = 0;
 
 	__asm__ volatile
-        ("\n\tmovdqa %0,%%xmm0\t#"
-	 "\n\tmovdqa %0,%%xmm1\t#" : :"m" (b[0]));
+        ("\n\tmovdqa 0x00(%0),%%xmm0\t#"
+	 "\n\tmovdqa 0x00(%0),%%xmm1\t#" : :"r" (b));
 
 	for (; i < length6; i += 96)
 	{
@@ -147,12 +147,12 @@ char sumelem_char_unrolled_sse2(char *a, int size)
 	{
 		__asm__ volatile
                 (
-		 "\n\t paddb %0,%%xmm0 \t#" : :"m" (a[i]));
+		 "\n\t paddb 0x00(%0),%%xmm0 \t#" : :"r" (a+i));
 	}
 
 	__asm__ volatile
         ("\n\t paddb %%xmm1,%%xmm0 \t#"
-	 "\n\t movdqa %%xmm0,%0 \t#" :"=m" (b[0]): );
+	 "\n\t movdqa %%xmm0,0x00(%0) \t#" : :"r" (b));
 	
 	rv = b[0]+b[1]+b[2]+b[3]+b[4]+b[5]+b[6]+b[7]+b[8]+b[9]+b[10]+b[11]+b[12]+b[13]+b[14]+b[15];
 	
@@ -204,18 +204,16 @@ int sumelem_int_sse2(int *a, int size)
 	int i = 0, length = (size / 4) * 4, rv = 0;
 
 	__asm__ volatile
-        ("movdqa %0,%%xmm0" : :"m" (b[0]));
+        ("movdqa 0x00(%0),%%xmm0" : :"r" (b));
 		
 	for (i = 0; i < length; i += 4)
 	{
 		__asm__ volatile
-                ("paddd 0x00(%0),%%xmm0"
-		 : :"r" (a+i));
-
+                ("paddd 0x00(%0),%%xmm0": :"r" (a+i));
 	}
 	
 	__asm__ volatile
-        ("movdqa %%xmm0,%0 " :"=m" (b[0]):);
+        ("movdqa %%xmm0,0x00(%0)": :"r" (b));
 	
 	rv = b[0] + b[1] + b[2] + b[3];
 	

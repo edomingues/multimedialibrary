@@ -5,13 +5,13 @@
 #include "libMultimedia.h"
 #include "dataStructure.h"
 
-#define SIZE 10000
+#define SIZE 100000
 #define SIZE2 100
 #define COLS 500
 #define ROWS 500
 #define COLS2 10
 #define ROWS2 10
-#define REPEAT 10
+#define REPEAT 100
 
 using namespace std;
 
@@ -27,18 +27,15 @@ void testSumelem()
 	int *array_int = create_array_int(SIZE),
 	    result_int1 = 0,
 	    result_int2 = 0,
-	    result_int3 = 0,
-	    result_int4 = 0;
+	    result_int3 = 0;
 	float *array_float = create_array_float(SIZE),
 	      result_float1 = 0,
 	      result_float2 = 0,
-	      result_float3 = 0,
-	      result_float4 = 0;
+	      result_float3 = 0;
 	double *array_double = create_array_double(SIZE),
 	       result_double1 = 0,
 	       result_double2 = 0,
-	       result_double3 = 0,
-	       result_double4 = 0;
+	       result_double3 = 0;
 
 	fill_array_random_char(array_char, SIZE);
 	fill_array_random_int(array_int, SIZE);
@@ -102,7 +99,7 @@ void testSumelem()
 
 	init = clock();
 	for(int i=0; i<REPEAT; i++)
-		result_int4 = sumelem_int_unrolled_sse2(array_int, SIZE);
+		result_int3 = sumelem_int_unrolled_sse2(array_int, SIZE);
 	end = clock();
 	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
 
@@ -110,7 +107,7 @@ void testSumelem()
 	cout << "speedup : " << time1/time2 << endl;
 
 	cout << "Compare Result: ";
-	if( result_int1 == result_int2 && result_int1 == result_int3 && result_int1 == result_int4)
+	if( result_int1 == result_int2 && result_int1 == result_int3 )
 		cout << "Equal" << endl;
 	else
 		cout << "Not Equal!" << endl;
@@ -136,17 +133,15 @@ void testSumelem()
 
 	init = clock();
 	for(int i=0; i<REPEAT; i++)
-		result_float4 = sumelem_float_unrolled_sse2(array_float, SIZE);
+		result_float3 = sumelem_float_unrolled_sse2(array_float, SIZE);
 	end = clock();
 	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
 
 	cout << "sumelem_float_unrolled_sse2 time: " << time2 << endl;
 	cout << "speedup : " << time1/time2 << endl;
 
-	cout<<"Results: "<<result_float1<<"; "<<result_float2<<"; "<<result_float3<<"; "<<result_float4<<"; "<<endl;	
-
 	cout << "Compare Result: ";
-	if( result_float1 == result_float2 && result_float2 == result_float3 && result_float1 == result_float4)
+	if( result_float1 == result_float2 && result_float2 == result_float3 )
 		cout << "Equal" << endl;
 	else
 		cout << "Not Equal!" << endl;
@@ -172,7 +167,7 @@ void testSumelem()
 
 	init = clock();
 	for(int i=0; i<REPEAT; i++)
-		result_double4 = sumelem_double_unrolled_sse2(array_double, SIZE);
+		result_double3 = sumelem_double_unrolled_sse2(array_double, SIZE);
 	end = clock();
 	time2 = (end-init)/(CLOCKS_PER_SEC*1.0);
 
@@ -180,7 +175,7 @@ void testSumelem()
 	cout << "speedup : " << time1/time2 << endl;
 
 	cout << "Compare Result: ";
-	if( result_double1 == result_double2 && result_double2 == result_double3 && result_double1 == result_double4 )
+	if( result_double1 == result_double2 && result_double2 == result_double3 )
 		cout << "Equal" << endl;
 	else
 		cout << "Not Equal!" << endl;
@@ -1910,13 +1905,13 @@ int main (void)
 	srandom(time(NULL));
 
 	//testSumelem();
-	//testSumarray();
+	testSumarray();
 	//testMularray();
 	//testDotProduct();
 	//testSummatrix();
 	//testSumLinearMatrix();
 	//testTransposeMatrix();
-	testMulmatrix();
+	//testMulmatrix();
 	//testMax();
 	//testMin();
 	//testMemCpy();

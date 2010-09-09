@@ -1904,6 +1904,11 @@ int main (void)
 {	
 	srandom(time(NULL));
 
+	if(isNearBy_double(1.99999999,2.0,0.0001) == true)
+		cout<<"True"<<endl;
+	else
+		cout<<"False"<<endl;
+	
 	//testSumelem();
 	//testSumarray();
 	//testMularray();
@@ -1911,7 +1916,7 @@ int main (void)
 	//testSummatrix();
 	//testSumLinearMatrix();
 	//testTransposeMatrix();
-	testMulmatrix();
+	//testMulmatrix();
 	//testMax();
 	//testMin();
 	//testMemCpy();

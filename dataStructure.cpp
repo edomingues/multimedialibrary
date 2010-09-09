@@ -13,6 +13,7 @@
 #include <iostream>
 #include <cstring>
 #include <cstdlib>
+#include <cmath>
 #include <malloc.h>
 
 #include "dataStructure.h"
@@ -1011,12 +1012,21 @@ bool isEqual_matrix_double(double **a, double **b, int rows, int cols)
 	bool rv = true;
 
 	for(i = 0; i < rows; i++)
+	{
 		for(j = 0; j < cols; j++)
-		if(a[i][j] != b[i][j])
 		{
-			rv = false;
+			if(a[i][j] != b[i][j])
+			{
+				rv = false;
+				break;
+			}
+		}
+
+		if(!rv)
+		{
 			break;
 		}
+	}
 
 	return rv;
 }
@@ -1117,6 +1127,126 @@ bool isEqual_linear_matrix_double(double *a, double *b, int rows, int cols)
 			rv = false;
 			break;
 		}
+
+	return rv;
+}
+
+/**
+ *
+ *
+ */
+bool isNearBy_float(float a, float b, float delta)
+{
+	bool rv = false;
+	float dif = fabs(a - b);
+
+	if(dif < delta)
+		rv = true;
+
+	return rv;
+}
+
+/**
+ *
+ *
+ */
+bool isNearBy_double(double a, double b, double delta)
+{
+	bool rv = false;
+	double dif = fabs(a - b);
+
+	if(dif < delta)
+		rv = true;
+
+	return rv;
+}
+
+/**
+ *
+ */
+bool isNearBy_array_float(float *a, float *b, int size, float delta)
+{
+	bool rv = true;
+	int i = 0;
+
+	for(i = 0; i < size; i++)
+	{
+		if(!isNearBy_float(a[i], b[i], delta))
+		{
+			rv = false;
+			break;
+		}
+	}
+
+	return rv;
+}
+
+/**
+ *
+ */
+bool isNearBy_array_double(double *a, double *b, int size, double delta)
+{
+	bool rv = true;
+	int i = 0;
+
+	for(i = 0; i < size; i++)
+	{
+		if(!isNearBy_double(a[i], b[i], delta))
+		{
+			rv = false;
+			break;
+		}
+	}
+
+	return rv;
+}
+
+bool isNearBy_matrix_float(float **a, float **b, float delta, int rows, int cols)
+{
+	int i = 0, j = 0;
+	bool rv = true;
+
+	for(i = 0; i < rows; i++)
+	{
+		for(j = 0; j < cols; j++)
+		{
+			if(!isNearBy_float(a[i][j], b[i][j], delta))
+			{
+				rv = false;
+				break;
+			}
+		}
+
+		if(!rv)
+		{
+			break;
+		}
+	}
+
+	return rv;
+}
+
+bool isNearBy_matrix_double(double **a, double **b, double delta, int rows, int cols)
+{
+	int i = 0, j = 0;
+	bool rv = true;
+
+	for(i = 0; i < rows; i++)
+	{
+		for(j = 0; j < cols; j++)
+		{
+			if(!isNearBy_double(a[i][j], b[i][j], delta))
+			{
+				rv = false;
+				break;
+			}
+		}
+
+		if(!rv)
+		{
+			break;
+		}
+	}
 
 	return rv;
 }

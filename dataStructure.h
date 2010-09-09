@@ -82,4 +82,7 @@ bool isEqual_linear_matrix_int(int *a, int *b, int rows, int cols);
 bool isEqual_linear_matrix_float(float *a, float *b, int rows, int cols);
 bool isEqual_linear_matrix_double(double *a, double *b, int rows, int cols);
 
+bool isNearBy_float(float a, float b, float delta);
+bool isNearBy_double(double a, double b, double delta);
+
 #endif

@@ -1,0 +1,2 @@
+This project is a Multimedia Library that uses SSE and SSE2 instructions to speedup vectores and matrixes calculations.
+The main objective is to demonstrate the potential of SIMD and how can be used to speedup generic computing.
